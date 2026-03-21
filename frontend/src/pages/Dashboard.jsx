@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useInView, animate } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import AnimatedBackground from '../components/AnimatedBackground'
 
 // ── TYPED TEXT HOOK ──────────────────────────────────────────
 function useTyped(text, speed = 40, startDelay = 0) {
@@ -166,11 +167,16 @@ export default function Dashboard() {
 
   return (
     <div style={{ background: '#0A0A0F', overflowX: 'hidden' }}>
-      <ScanLine />
-      <NavDots active={activeNav} />
+      {/* ADD THIS — sits behind everything */}
+      <AnimatedBackground />
 
-      {/* ── SECTION 1: HERO ──────────────────────────────── */}
-      <Section id="hero" style={{ background: '#0A0A0F' }}>
+      {/* ADD this wrapper around ALL your sections */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <ScanLine />
+        <NavDots active={activeNav} />
+
+        {/* ── SECTION 1: HERO ──────────────────────────────── */}
+        <Section id="hero" style={{ background: 'transparent' }}>
         <HexBg opacity={0.06} />
 
         {/* Parallax container */}
@@ -280,7 +286,7 @@ export default function Dashboard() {
       </Section>
 
       {/* ── SECTION 2: MISSION ───────────────────────────── */}
-      <Section id="mission" style={{ background: '#0D0D1A' }}>
+      <Section id="mission" style={{ background: 'rgba(13,13,26,0.7)' }}>
         <HexBg opacity={0.04} />
         <motion.div style={{ y: missionY }}
           style={{
@@ -295,7 +301,7 @@ export default function Dashboard() {
       </Section>
 
       {/* ── SECTION 3: FEATURES ──────────────────────────── */}
-      <Section id="features" style={{ background: '#0A0A0F', padding: '80px 0' }}>
+      <Section id="features" style={{ background: 'rgba(10,10,15,0.6)', padding: '80px 0' }}>
         <HexBg opacity={0.05} />
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px' }}>
           <FeaturesSection navigate={navigate} />
@@ -304,7 +310,7 @@ export default function Dashboard() {
 
       {/* ── SECTION 4: STATS ─────────────────────────────── */}
       <Section id="stats"
-        style={{ background: '#0D0D1A', minHeight: '60vh' }}>
+        style={{ background: 'rgba(13,13,26,0.75)', minHeight: '60vh' }}>
         <HexBg opacity={0.06} />
         <div style={{ maxWidth: 1000, margin: '0 auto', padding: '100px 40px' }}>
           <StatsSection />
@@ -313,7 +319,7 @@ export default function Dashboard() {
 
       {/* ── SECTION 5: TECH STACK ────────────────────────── */}
       <Section id="tech"
-        style={{ background: '#0A0A0F', minHeight: '70vh' }}>
+        style={{ background: 'rgba(10,10,15,0.65)', minHeight: '70vh' }}>
         <HexBg opacity={0.04} />
         <div style={{ maxWidth: 1000, margin: '0 auto', padding: '100px 40px' }}>
           <TechSection />
@@ -322,7 +328,7 @@ export default function Dashboard() {
 
       {/* ── SECTION 6: DEMO ──────────────────────────────── */}
       <Section id="demo"
-        style={{ background: '#0D0D1A', minHeight: '80vh' }}>
+        style={{ background: 'rgba(13,13,26,0.7)', minHeight: '80vh' }}>
         <HexBg opacity={0.05} />
         <div style={{ maxWidth: 1000, margin: '0 auto', padding: '100px 40px' }}>
           <DemoSection />
@@ -331,10 +337,11 @@ export default function Dashboard() {
 
       {/* ── SECTION 7: ENTER ─────────────────────────────── */}
       <Section id="enter"
-        style={{ background: '#0A0A0F', minHeight: '80vh' }}>
+        style={{ background: 'transparent', minHeight: '80vh' }}>
         <HexBg opacity={0.08} />
         <EnterSection navigate={navigate} />
       </Section>
+      </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
@@ -493,7 +500,9 @@ function MissionSection() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.4 + i * 0.15 }}
             style={{
-              background: '#0D0D1A',
+              background: 'rgba(13,13,26,0.8)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
               border: `1px solid ${item.color}33`,
               borderTop: `2px solid ${item.color}`,
               borderRadius: 2, padding: 20, textAlign: 'center'
@@ -600,7 +609,9 @@ function FeaturesSection({ navigate }) {
             transition={{ delay: i * 0.1 }}
             onClick={() => navigate(feat.path)}
             style={{
-              background: '#0D0D1A',
+              background: 'rgba(13,13,26,0.8)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
               border: `1px solid ${feat.color}22`,
               borderTop: `2px solid ${feat.color}`,
               borderRadius: 4, padding: 24,
@@ -714,7 +725,9 @@ function StatsSection() {
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ delay: i * 0.08 }}
               style={{
-                background: '#0D0D1A',
+                background: 'rgba(13,13,26,0.8)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
                 border: `1px solid ${stat.color}22`,
                 borderRadius: 4, padding: '20px 16px',
                 textAlign: 'center'
@@ -789,7 +802,9 @@ function TechSection() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ delay: i * 0.07 }}
             style={{
-              background: '#0D0D1A',
+              background: 'rgba(13,13,26,0.8)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
               border: `1px solid ${tech.color}22`,
               borderLeft: `3px solid ${tech.color}`,
               borderRadius: '0 4px 4px 0',
@@ -901,7 +916,9 @@ function DemoSection() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           style={{
-            background: '#0D0D1A',
+            background: 'rgba(13,13,26,0.8)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             border: `1px solid ${DEMO_STEPS[step].color}`,
             borderRadius: 8, padding: 40,
             textAlign: 'center',
