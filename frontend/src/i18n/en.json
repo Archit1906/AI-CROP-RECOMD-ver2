@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "crop": "Crop Recommendation",
+    "disease": "Disease Detection",
+    "weather": "Weather Forecast",
+    "market": "Market Prices",
+    "chatbot": "AI Assistant (Amrit)",
+    "schemes": "Government Schemes"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "sensors_active": "Sensors Active",
+    "weather": "TODAY'S WEATHER",
+    "crop": "ACTIVE CROP",
+    "market": "MARKET ALERT",
+    "health": "FARM HEALTH SCORE",
+    "recommend_crop": "Recommend Crop",
+    "check_disease": "Check Disease",
+    "ask_ai": "Ask AI",
+    "market_prices": "Market Prices",
+    "yield_prediction": "YIELD PREDICTION (KG)",
+    "alerts_feed": "ALERTS FEED",
+    "view_all": "View All →"
+  },
+  "crop_rec": {
+    "title": "What should I grow?",
+    "subtitle": "Adjust your soil and climate conditions",
+    "analyze_btn": "Analyze My Farm",
+    "analyzing": "Analyzing...",
+    "compare_mode": "Compare Two Soils",
+    "nitrogen": "Nitrogen (N)",
+    "phosphorus": "Phosphorus (P)",
+    "potassium": "Potassium (K)",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "ph": "pH Level",
+    "rainfall": "Rainfall",
+    "optimal_range": "optimal",
+    "view_guide": "View Farming Guide",
+    "why_crop": "Why this crop?",
+    "avg_profit": "Avg Profit",
+    "water_need": "Water Need",
+    "season": "Season",
+    "duration": "Duration",
+    "previous_analyses": "Previous Analyses",
+    "match": "Match"
+  }
+}

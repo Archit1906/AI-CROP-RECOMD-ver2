@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड (Dashboard)",
+    "crop": "फसल अनुशंसा (Crop Rec)",
+    "disease": "रोग पहचान (Disease)",
+    "weather": "मौसम (Weather)",
+    "market": "बाजार मूल्य (Market)",
+    "chatbot": "एआई सहायक (AI Assist)",
+    "schemes": "सरकारी योजनाएं (Schemes)"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "sensors_active": "सेंसर सक्रिय",
+    "weather": "आज का मौसम",
+    "crop": "वर्तमान फसल",
+    "market": "बाजार अलर्ट",
+    "health": "खेत का स्वास्थ्य",
+    "recommend_crop": "फसल अनुशंसा",
+    "check_disease": "रोग पहचान",
+    "ask_ai": "AI से पूछें",
+    "market_prices": "बाजार भाव",
+    "yield_prediction": "उपज अनुमान (KG)",
+    "alerts_feed": "अलर्ट फ़ीड",
+    "view_all": "सभी देखें →"
+  },
+  "crop_rec": {
+    "title": "मुझे क्या उगाना चाहिए?",
+    "subtitle": "अपनी मिट्टी और जलवायु परिस्थितियों को सेट करें",
+    "analyze_btn": "मेरे खेत का विश्लेषण करें",
+    "analyzing": "विश्लेषण हो रहा है...",
+    "compare_mode": "दो मिट्टी की तुलना करें",
+    "nitrogen": "नाइट्रोजन (N)",
+    "phosphorus": "फास्फोरस (P)",
+    "potassium": "पोटेशियम (K)",
+    "temperature": "तापमान",
+    "humidity": "नमी",
+    "ph": "pH स्तर",
+    "rainfall": "बारिश",
+    "optimal_range": "इष्टतम सीमा",
+    "view_guide": "खेती गाइड देखें",
+    "why_crop": "यह फसल क्यों?",
+    "avg_profit": "औसत लाभ",
+    "water_need": "पानी की आवश्यकता",
+    "season": "मौसम",
+    "duration": "अवधि",
+    "previous_analyses": "पिछले विश्लेषण",
+    "match": "मेल"
+  }
+}

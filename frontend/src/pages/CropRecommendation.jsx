@@ -1,0 +1,873 @@
+import { useState, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import IndiaMap from '../components/IndiaMap'
+import { SOIL_DATA, STATE_CAPITALS } from '../data/soilData'
+import {
+  STATE_DISTRICTS,
+  DISTRICT_SOIL_MODIFIERS,
+  DISTRICT_ZONES
+} from '../data/districtData'
+import api from '../api/axios'
+
+const CROP_INFO = {
+  rice:        { emoji:'🌾', profit:'₹28,000/acre', season:'Kharif',  water:'High',   days:'90-120'  },
+  wheat:       { emoji:'🌿', profit:'₹22,000/acre', season:'Rabi',    water:'Medium', days:'110-130' },
+  maize:       { emoji:'🌽', profit:'₹18,000/acre', season:'Kharif',  water:'Medium', days:'80-110'  },
+  cotton:      { emoji:'🌱', profit:'₹35,000/acre', season:'Kharif',  water:'Medium', days:'150-180' },
+  sugarcane:   { emoji:'🎋', profit:'₹45,000/acre', season:'Annual',  water:'High',   days:'300-365' },
+  coffee:      { emoji:'☕', profit:'₹75,000/acre', season:'Annual',  water:'High',   days:'365'     },
+  coconut:     { emoji:'🥥', profit:'₹40,000/acre', season:'Annual',  water:'High',   days:'365'     },
+  banana:      { emoji:'🍌', profit:'₹60,000/acre', season:'Annual',  water:'High',   days:'270-365' },
+  mango:       { emoji:'🥭', profit:'₹70,000/acre', season:'Annual',  water:'Medium', days:'90-120'  },
+  chickpea:    { emoji:'🫘', profit:'₹22,000/acre', season:'Rabi',    water:'Low',    days:'90-100'  },
+  lentil:      { emoji:'🫘', profit:'₹21,000/acre', season:'Rabi',    water:'Low',    days:'100-120' },
+  mungbean:    { emoji:'🌿', profit:'₹16,000/acre', season:'Kharif',  water:'Low',    days:'60-75'   },
+  blackgram:   { emoji:'🫘', profit:'₹17,000/acre', season:'Kharif',  water:'Low',    days:'70-90'   },
+  pomegranate: { emoji:'🍎', profit:'₹80,000/acre', season:'Annual',  water:'Low',    days:'150-180' },
+  grapes:      { emoji:'🍇', profit:'₹90,000/acre', season:'Annual',  water:'Medium', days:'150-180' },
+  watermelon:  { emoji:'🍉', profit:'₹30,000/acre', season:'Summer',  water:'Medium', days:'70-90'   },
+  papaya:      { emoji:'🍈', profit:'₹50,000/acre', season:'Annual',  water:'High',   days:'240-270' },
+  orange:      { emoji:'🍊', profit:'₹65,000/acre', season:'Annual',  water:'Medium', days:'270-365' },
+  kidneybeans: { emoji:'🫘', profit:'₹20,000/acre', season:'Kharif',  water:'Medium', days:'90-120'  },
+  pigeonpeas:  { emoji:'🌿', profit:'₹19,000/acre', season:'Kharif',  water:'Low',    days:'150-180' },
+  mothbeans:   { emoji:'🌱', profit:'₹15,000/acre', season:'Kharif',  water:'Low',    days:'75-85'   },
+  jute:        { emoji:'🌿', profit:'₹20,000/acre', season:'Kharif',  water:'High',   days:'100-120' },
+}
+
+const LOAD_PHASES = [
+  '// LOCATING DISTRICT COORDINATES...',
+  '// FETCHING ATMOSPHERIC DATA...',
+  '// RETRIEVING SOIL COMPOSITION...',
+  '// APPLYING DISTRICT MODIFIERS...',
+  '// RUNNING MAGI ANALYSIS...',
+  '// GENERATING RECOMMENDATION...',
+]
+
+export default function CropRecommendation() {
+  const [step,          setStep]          = useState('map')
+  // 'map' → 'district' → 'loading' → 'result'
+  const [selectedState, setSelectedState] = useState(null)
+  const [selectedDist,  setSelectedDist]  = useState(null)
+  const [distSearch,    setDistSearch]    = useState('')
+  const [weather,       setWeather]       = useState(null)
+  const [soil,          setSoil]          = useState(null)
+  const [result,        setResult]        = useState(null)
+  const [loadPhase,     setLoadPhase]     = useState(0)
+  const [history,       setHistory]       = useState([])
+  const [error,         setError]         = useState(null)
+
+  // Filtered district list
+  const districts = useMemo(() => {
+    const list = STATE_DISTRICTS[selectedState] || []
+    if (!distSearch.trim()) return list
+    return list.filter(d =>
+      d.toLowerCase().includes(distSearch.toLowerCase())
+    )
+  }, [selectedState, distSearch])
+
+  // Step 1 — state selected on map
+  const handleStateSelect = useCallback((stateName) => {
+    if (!stateName || !STATE_DISTRICTS[stateName]) return
+    setSelectedState(stateName)
+    setSelectedDist(null)
+    setResult(null)
+    setError(null)
+    setDistSearch('')
+    setStep('district')
+  }, [])
+
+  // Get district-adjusted soil data
+  const getDistrictSoil = useCallback((stateName, districtName) => {
+    const baseSoil = SOIL_DATA[stateName] || { N:80, P:40, K:50, ph:7.0, region:'central' }
+    const zone     = DISTRICT_ZONES[districtName] || 'default'
+    const mod      = DISTRICT_SOIL_MODIFIERS[zone]   || DISTRICT_SOIL_MODIFIERS.default
+
+    return {
+      ...baseSoil,
+      N:  Math.max(20, Math.min(140, baseSoil.N  + mod.N)),
+      P:  Math.max(10, Math.min(145, baseSoil.P  + mod.P)),
+      K:  Math.max(10, Math.min(205, baseSoil.K  + mod.K)),
+      ph: Math.max(4,  Math.min(9,   baseSoil.ph + mod.ph)),
+      zone
+    }
+  }, [])
+
+  // Step 2 — district selected → fetch + predict
+  const handleDistrictSelect = useCallback(async (districtName) => {
+    setSelectedDist(districtName)
+    setStep('loading')
+    setError(null)
+    setLoadPhase(0)
+
+    try {
+      // Phase 1 — locate
+      setLoadPhase(0)
+      await new Promise(r => setTimeout(r, 500))
+
+      // Phase 2 — weather for specific district/city
+      setLoadPhase(1)
+      let weatherData
+      try {
+        const wRes = await api.get(
+          `/api/weather/${encodeURIComponent(districtName)}`
+        )
+        weatherData = {
+          temperature: wRes.data.current?.temp       || wRes.data.temperature,
+          humidity:    wRes.data.current?.humidity   || wRes.data.humidity,
+          rainfall:    wRes.data.current?.rainfall   || wRes.data.rainfall || 80,
+          description: wRes.data.current?.description|| 'Partly Cloudy',
+          city:        districtName
+        }
+      } catch {
+        // Region-based mock weather
+        const baseSoil = SOIL_DATA[selectedState] || {}
+        const zone     = DISTRICT_ZONES[districtName] || baseSoil.region || 'central'
+        const regionWeather = {
+          coastal:      { temperature:28, humidity:80, rainfall:200 },
+          hill:         { temperature:15, humidity:65, rainfall:180 },
+          plain:        { temperature:27, humidity:68, rainfall:110 },
+          gangetic:     { temperature:26, humidity:70, rainfall:120 },
+          northeastern: { temperature:22, humidity:85, rainfall:230 },
+          himalayan:    { temperature:10, humidity:58, rainfall:160 },
+          central:      { temperature:30, humidity:55, rainfall:85  },
+          western:      { temperature:32, humidity:48, rainfall:65  },
+          southern:     { temperature:29, humidity:74, rainfall:140 },
+          arid:         { temperature:36, humidity:22, rainfall:25  },
+          eastern:      { temperature:27, humidity:76, rainfall:170 },
+        }
+        weatherData = {
+          ...(regionWeather[zone] || regionWeather.central),
+          description: 'Partly Cloudy',
+          city: districtName
+        }
+      }
+      setWeather(weatherData)
+      await new Promise(r => setTimeout(r, 400))
+
+      // Phase 3 — district-adjusted soil
+      setLoadPhase(2)
+      const soilData = getDistrictSoil(selectedState, districtName)
+      setSoil(soilData)
+      await new Promise(r => setTimeout(r, 400))
+
+      // Phase 4 — apply modifiers
+      setLoadPhase(3)
+      await new Promise(r => setTimeout(r, 300))
+
+      // Phase 5 — ML prediction
+      setLoadPhase(4)
+      const predRes = await api.post('/api/predict-crop', {
+        nitrogen:    soilData.N,
+        phosphorus:  soilData.P,
+        potassium:   soilData.K,
+        temperature: weatherData.temperature,
+        humidity:    weatherData.humidity,
+        ph:          soilData.ph,
+        rainfall:    weatherData.rainfall,
+      })
+
+      // Phase 6 — done
+      setLoadPhase(5)
+      await new Promise(r => setTimeout(r, 300))
+
+      setResult(predRes.data)
+      setStep('result')
+
+      setHistory(prev => [{
+        state:    selectedState,
+        district: districtName,
+        crop:     predRes.data.recommended_crop,
+        conf:     predRes.data.confidence,
+        time:     new Date().toLocaleTimeString('en-IN')
+      }, ...prev].slice(0, 6))
+
+    } catch (err) {
+      setError(`Analysis failed for ${districtName}. Check backend.`)
+      setStep('district')
+    }
+  }, [selectedState, getDistrictSoil])
+
+  const cropKey  = result?.recommended_crop?.toLowerCase().replace(/[\s_]/g,'')
+  const cropInfo = CROP_INFO[cropKey] || { emoji:'🌱', profit:'N/A', season:'N/A', water:'N/A', days:'N/A' }
+
+  return (
+    <div style={{ padding:24, background:'#0A0A0F', minHeight:'100vh' }}>
+
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between',
+                    alignItems:'flex-start', marginBottom:20,
+                    paddingBottom:16, borderBottom:'1px solid #FF660022' }}>
+        <div>
+          <p style={{ fontFamily:"'Courier New'", fontSize:9,
+                       color:'#FF660066', letterSpacing:4, margin:'0 0 6px' }}>
+            // MAGI CROP ANALYSIS SYSTEM
+          </p>
+          <h1 style={{ fontFamily:"'Orbitron'", fontSize:22, fontWeight:900,
+                       color:'#FF6600', margin:0, letterSpacing:4,
+                       textShadow:'0 0 20px #FF660066' }}>
+            CROP RECOMMENDATION
+          </h1>
+        </div>
+
+        {/* Breadcrumb */}
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          {['STATE','DISTRICT','RESULT'].map((label, i) => {
+            const stepMap = { 0:'map', 1:'district', 2:'result' }
+            const isActive = step === stepMap[i] ||
+                             (step === 'loading' && i === 1) ||
+                             (step === 'result'  && i === 2)
+            const isDone   = (i === 0 && selectedState) ||
+                             (i === 1 && selectedDist)
+            return (
+              <div key={label} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{
+                  display:'flex', alignItems:'center', gap:6,
+                  padding:'4px 12px', borderRadius:1,
+                  border:`1px solid ${isActive ? '#FF6600' : isDone ? '#FF660044' : '#FF660011'}`,
+                  background: isActive ? '#FF660022' : 'transparent'
+                }}>
+                  <div style={{
+                    width:6, height:6, borderRadius:'50%',
+                    background: isActive ? '#FF6600' : isDone ? '#00FF41' : '#333',
+                    boxShadow: isActive ? '0 0 6px #FF6600' : 'none'
+                  }} />
+                  <span style={{ fontFamily:"'Courier New'", fontSize:9,
+                                  color: isActive ? '#FF6600' : isDone ? '#00FF4188' : '#333',
+                                  letterSpacing:2 }}>
+                    {label}
+                  </span>
+                  {isDone && i < 2 && (
+                    <span style={{ color:'#00FF41', fontSize:9 }}>✓</span>
+                  )}
+                </div>
+                {i < 2 && (
+                  <span style={{ color:'#FF660022', fontSize:12 }}>▶</span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div style={{ display:'grid',
+                    gridTemplateColumns: step === 'map' ? '1fr' : '440px 1fr',
+                    gap:20, alignItems:'start' }}>
+
+        {/* LEFT — Map (always visible) */}
+        <div style={{ background:'#0D0D1A',
+                      border:'1px solid #FF660033',
+                      borderRadius:4, padding:16 }}>
+
+          <p style={{ fontFamily:"'Courier New'", fontSize:9,
+                       color:'#FF660066', letterSpacing:3, margin:'0 0 4px' }}>
+            // {step === 'map' ? 'SELECT TARGET STATE' : 'STATE LOCKED'}
+          </p>
+          {selectedState && (
+            <p style={{ fontFamily:"'Orbitron'", fontSize:11, color:'#FF6600',
+                         letterSpacing:3, margin:'0 0 12px' }}>
+              ◉ {selectedState.toUpperCase()}
+              {selectedDist && ` → ${selectedDist.toUpperCase()}`}
+            </p>
+          )}
+
+          <div style={{ display:'flex', justifyContent:'center',
+                        opacity: step !== 'map' ? 0.7 : 1,
+                        transition:'opacity 0.3s' }}>
+            <IndiaMap
+              onStateSelect={step === 'map' ? handleStateSelect : undefined}
+              selectedState={selectedState}
+              activeStates={history.map(h => h.state)}
+            />
+          </div>
+
+          {step !== 'map' && (
+            <button onClick={() => {
+              setStep('map')
+              setSelectedState(null)
+              setSelectedDist(null)
+              setResult(null)
+              setWeather(null)
+              setSoil(null)
+            }} style={{
+              width:'100%', marginTop:12, padding:'8px',
+              background:'transparent',
+              border:'1px solid #FF660022', borderRadius:1,
+              color:'#FF660066', fontFamily:"'Courier New'",
+              fontSize:9, letterSpacing:2, cursor:'pointer'
+            }}>
+              // RESELECT STATE ←
+            </button>
+          )}
+
+          {/* History */}
+          {history.length > 0 && (
+            <div style={{ marginTop:12 }}>
+              <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                           color:'#FF660033', letterSpacing:3, margin:'0 0 6px' }}>
+                // SCAN HISTORY
+              </p>
+              {history.map((h, i) => (
+                <div key={i}
+                  onClick={() => {
+                    setSelectedState(h.state)
+                    setStep('district')
+                    setResult(null)
+                  }}
+                  style={{ padding:'5px 8px', marginBottom:3,
+                           background:'#0A0A0F',
+                           border:'1px solid #FF660011', borderRadius:1,
+                           cursor:'pointer', transition:'all 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor='#FF660033'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor='#FF660011'}>
+                  <div style={{ display:'flex', justifyContent:'space-between' }}>
+                    <span style={{ fontFamily:"'Courier New'", fontSize:9,
+                                    color:'#FF6600' }}>
+                      {h.state} → {h.district}
+                    </span>
+                    <span style={{ fontFamily:"'Courier New'", fontSize:8,
+                                    color:'#00FF4188' }}>
+                      {h.crop}
+                    </span>
+                  </div>
+                  <span style={{ fontFamily:"'Courier New'", fontSize:7,
+                                  color:'#444' }}>
+                    {h.time} // {h.conf}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT — District selector / Loading / Result */}
+        {step !== 'map' && (
+          <div>
+
+            {/* ── DISTRICT SELECTOR ── */}
+            <AnimatePresence mode="wait">
+              {(step === 'district') && (
+                <motion.div key="district"
+                  initial={{ opacity:0, x:20 }}
+                  animate={{ opacity:1, x:0 }}
+                  exit={{ opacity:0, x:-20 }}
+                  transition={{ duration:0.3 }}>
+
+                  <div style={{ background:'#0D0D1A',
+                                border:'1px solid #FF660033',
+                                borderRadius:4, padding:20 }}>
+
+                    <p style={{ fontFamily:"'Courier New'", fontSize:9,
+                                 color:'#FF660066', letterSpacing:3, margin:'0 0 4px' }}>
+                      // SELECT DISTRICT / CITY
+                    </p>
+                    <p style={{ fontFamily:"'Orbitron'", fontSize:14,
+                                 color:'#FF6600', margin:'0 0 16px',
+                                 letterSpacing:3 }}>
+                      {selectedState?.toUpperCase()}
+                    </p>
+
+                    {error && (
+                      <div style={{ background:'#2D0A0A',
+                                    border:'1px solid #FF003344',
+                                    borderRadius:2, padding:'8px 12px',
+                                    marginBottom:12 }}>
+                        <p style={{ fontFamily:"'Courier New'", fontSize:9,
+                                     color:'#FF0033', margin:0 }}>
+                          ⚠ {error}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Search */}
+                    <div style={{ display:'flex', alignItems:'center', gap:8,
+                                  background:'#0A0A0F',
+                                  border:'1px solid #FF660044', borderRadius:2,
+                                  padding:'8px 12px', marginBottom:14 }}>
+                      <span style={{ color:'#FF660066', fontSize:14 }}>⌕</span>
+                      <input
+                        value={distSearch}
+                        onChange={e => setDistSearch(e.target.value)}
+                        placeholder="SEARCH DISTRICT..."
+                        autoFocus
+                        style={{ background:'transparent', border:'none',
+                                  outline:'none', color:'#E8E8E8',
+                                  fontFamily:"'Courier New'", fontSize:12,
+                                  letterSpacing:1, width:'100%' }}
+                      />
+                      {distSearch && (
+                        <button onClick={() => setDistSearch('')}
+                          style={{ background:'none', border:'none',
+                                   color:'#FF6600', cursor:'pointer',
+                                   fontSize:16 }}>×</button>
+                      )}
+                    </div>
+
+                    {/* Count */}
+                    <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                 color:'#666680', letterSpacing:2,
+                                 margin:'0 0 10px' }}>
+                      // {districts.length} DISTRICTS AVAILABLE
+                    </p>
+
+                    {/* District grid */}
+                    <div style={{ display:'grid',
+                                  gridTemplateColumns:'repeat(3,1fr)',
+                                  gap:6, maxHeight:380,
+                                  overflowY:'auto',
+                                  paddingRight:4 }}>
+                      {districts.map((district, i) => {
+                        const zone     = DISTRICT_ZONES[district] || 'default'
+                        const zoneColor = {
+                          coastal:'#00FFFF', hill:'#8B5CF6',
+                          arid:'#FFD700', plain:'#00FF41',
+                          default:'#FF660066'
+                        }[zone] || '#FF660066'
+
+                        return (
+                          <motion.button
+                            key={district}
+                            initial={{ opacity:0, y:5 }}
+                            animate={{ opacity:1, y:0 }}
+                            transition={{ delay:i * 0.02 }}
+                            onClick={() => handleDistrictSelect(district)}
+                            style={{
+                              background: district === selectedDist
+                                ? '#FF660022' : '#0A0A0F',
+                              border:`1px solid ${district === selectedDist
+                                ? '#FF6600' : '#FF660022'}`,
+                              borderRadius:2, padding:'10px 6px',
+                              cursor:'pointer', textAlign:'center',
+                              transition:'all 0.15s',
+                              position:'relative', overflow:'hidden'
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.borderColor = '#FF660066'
+                              e.currentTarget.style.background  = '#FF660011'
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.borderColor =
+                                district === selectedDist ? '#FF6600' : '#FF660022'
+                              e.currentTarget.style.background  =
+                                district === selectedDist ? '#FF660022' : '#0A0A0F'
+                            }}>
+
+                            {/* Zone indicator dot */}
+                            <div style={{
+                              position:'absolute', top:3, right:3,
+                              width:4, height:4, borderRadius:'50%',
+                              background:zoneColor,
+                              boxShadow:`0 0 4px ${zoneColor}`
+                            }} />
+
+                            <p style={{ fontFamily:"'Courier New'",
+                                         fontSize:9, color:'#E8E8E8',
+                                         margin:0, letterSpacing:1,
+                                         lineHeight:1.3 }}>
+                              {district}
+                            </p>
+                          </motion.button>
+                        )
+                      })}
+
+                      {districts.length === 0 && (
+                        <div style={{ gridColumn:'1/-1', textAlign:'center',
+                                       padding:20 }}>
+                          <p style={{ fontFamily:"'Courier New'", fontSize:10,
+                                       color:'#444', letterSpacing:2 }}>
+                            // NO MATCH FOUND
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Zone legend */}
+                    <div style={{ marginTop:12, paddingTop:12,
+                                  borderTop:'1px solid #FF660011',
+                                  display:'flex', gap:12, flexWrap:'wrap' }}>
+                      {[
+                        { zone:'coastal', color:'#00FFFF', label:'Coastal' },
+                        { zone:'hill',    color:'#8B5CF6', label:'Hill'    },
+                        { zone:'arid',    color:'#FFD700', label:'Arid'    },
+                        { zone:'plain',   color:'#00FF41', label:'Plain'   },
+                      ].map(z => (
+                        <div key={z.zone} style={{ display:'flex',
+                                                    alignItems:'center', gap:4 }}>
+                          <div style={{ width:6, height:6, borderRadius:'50%',
+                                         background:z.color }} />
+                          <span style={{ fontFamily:"'Courier New'", fontSize:8,
+                                          color:'#666680', letterSpacing:1 }}>
+                            {z.label}
+                          </span>
+                        </div>
+                      ))}
+                      <span style={{ fontFamily:"'Courier New'", fontSize:8,
+                                      color:'#444', letterSpacing:1 }}>
+                        (dot = soil zone type)
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── LOADING ── */}
+              {step === 'loading' && (
+                <motion.div key="loading"
+                  initial={{ opacity:0 }}
+                  animate={{ opacity:1 }}
+                  exit={{ opacity:0 }}
+                  style={{ background:'#0D0D1A',
+                           border:'1px solid #FF660033',
+                           borderRadius:4, padding:32,
+                           textAlign:'center' }}>
+
+                  <p style={{ fontFamily:"'Courier New'", fontSize:9,
+                               color:'#FF660066', letterSpacing:3, margin:'0 0 20px' }}>
+                    // MAGI ANALYSIS: {selectedState?.toUpperCase()} → {selectedDist?.toUpperCase()}
+                  </p>
+
+                  {/* Spinner */}
+                  <div style={{ display:'flex', justifyContent:'center', marginBottom:24 }}>
+                    <div style={{ width:48, height:48,
+                                   border:'2px solid #FF660022',
+                                   borderTop:'2px solid #FF6600',
+                                   borderRadius:'50%',
+                                   animation:'spin 0.8s linear infinite' }} />
+                  </div>
+
+                  {/* Current phase */}
+                  <p style={{ fontFamily:"'Courier New'", fontSize:11,
+                               color:'#FF6600', letterSpacing:1,
+                               margin:'0 0 20px',
+                               animation:'flicker 0.4s infinite' }}>
+                    {LOAD_PHASES[loadPhase]}
+                  </p>
+
+                  {/* Phase bars */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                    {LOAD_PHASES.map((phase, i) => (
+                      <div key={i} style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <span style={{ fontFamily:"'Courier New'", fontSize:9,
+                                        color: i < loadPhase  ? '#00FF41' :
+                                               i === loadPhase ? '#FF6600' : '#333',
+                                        minWidth:12 }}>
+                          {i < loadPhase ? '✓' : i === loadPhase ? '▶' : '○'}
+                        </span>
+                        <div style={{ flex:1, height:2,
+                                       background:'#FF660011', borderRadius:1 }}>
+                          <motion.div
+                            initial={{ width:0 }}
+                            animate={{ width: i < loadPhase ? '100%' :
+                                              i === loadPhase ? '60%' : '0%' }}
+                            transition={{ duration:0.4 }}
+                            style={{ height:'100%', borderRadius:1,
+                                      background: i < loadPhase ? '#00FF4166' : '#FF6600' }} />
+                        </div>
+                        <span style={{ fontFamily:"'Courier New'", fontSize:8,
+                                        color: i === loadPhase ? '#FF6600' : '#333',
+                                        letterSpacing:1, minWidth:180,
+                                        textAlign:'left' }}>
+                          {phase.replace('// ','')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── RESULT ── */}
+              {step === 'result' && result && (
+                <motion.div key="result"
+                  initial={{ opacity:0, y:10 }}
+                  animate={{ opacity:1, y:0 }}
+                  transition={{ duration:0.4 }}>
+
+                  {/* Data cards row */}
+                  <div style={{ display:'grid',
+                                gridTemplateColumns:'repeat(3,1fr)',
+                                gap:10, marginBottom:14 }}>
+
+                    {/* Weather */}
+                    <div style={{ background:'#0D0D1A',
+                                  border:'1px solid #00FFFF22',
+                                  borderTop:'2px solid #00FFFF',
+                                  borderRadius:2, padding:12 }}>
+                      <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                   color:'#00FFFF66', letterSpacing:3,
+                                   margin:'0 0 8px' }}>
+                        // WEATHER // {selectedDist?.toUpperCase()}
+                      </p>
+                      {weather && [
+                        { l:'TEMP',     v:`${weather.temperature}°C`, c:'#FF6600' },
+                        { l:'HUMIDITY', v:`${weather.humidity}%`,     c:'#00FFFF' },
+                        { l:'RAINFALL', v:`${weather.rainfall}mm`,    c:'#3B82F6' },
+                      ].map(item => (
+                        <div key={item.l} style={{ marginBottom:6 }}>
+                          <p style={{ fontFamily:"'Courier New'", fontSize:7,
+                                       color:'#444', letterSpacing:2,
+                                       margin:'0 0 1px' }}>
+                            {item.l}
+                          </p>
+                          <p style={{ fontFamily:"'Orbitron'", fontSize:14,
+                                       fontWeight:700, color:item.c,
+                                       margin:0 }}>
+                            {item.v}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Soil */}
+                    <div style={{ background:'#0D0D1A',
+                                  border:'1px solid #FF660022',
+                                  borderTop:'2px solid #FF6600',
+                                  borderRadius:2, padding:12 }}>
+                      <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                   color:'#FF660066', letterSpacing:3,
+                                   margin:'0 0 8px' }}>
+                        // SOIL // {soil?.zone?.toUpperCase()} ZONE
+                      </p>
+                      {soil && [
+                        { l:'N', v:`${soil.N}`,  c:'#FF6600' },
+                        { l:'P', v:`${soil.P}`,  c:'#00FFFF' },
+                        { l:'K', v:`${soil.K}`,  c:'#FFD700' },
+                        { l:'pH',v:`${soil.ph}`, c:'#8B5CF6' },
+                      ].map(item => (
+                        <div key={item.l} style={{ display:'flex',
+                                                    justifyContent:'space-between',
+                                                    alignItems:'center',
+                                                    marginBottom:5 }}>
+                          <span style={{ fontFamily:"'Courier New'", fontSize:8,
+                                          color:'#666680', letterSpacing:2 }}>
+                            {item.l}
+                          </span>
+                          <span style={{ fontFamily:"'Orbitron'", fontSize:12,
+                                          fontWeight:700, color:item.c }}>
+                            {item.v}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Location */}
+                    <div style={{ background:'#0D0D1A',
+                                  border:'1px solid #8B5CF622',
+                                  borderTop:'2px solid #8B5CF6',
+                                  borderRadius:2, padding:12 }}>
+                      <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                   color:'#8B5CF666', letterSpacing:3,
+                                   margin:'0 0 8px' }}>
+                        // LOCATION
+                      </p>
+                      <p style={{ fontFamily:"'Orbitron'", fontSize:11,
+                                   color:'#FF6600', margin:'0 0 2px',
+                                   letterSpacing:2 }}>
+                        {selectedState?.toUpperCase()}
+                      </p>
+                      <p style={{ fontFamily:"'Orbitron'", fontSize:13,
+                                   fontWeight:700, color:'#E8E8E8',
+                                   margin:'0 0 8px', letterSpacing:1 }}>
+                        {selectedDist?.toUpperCase()}
+                      </p>
+                      <div style={{ padding:'4px 8px',
+                                    background:`${(() => {
+                                      const z = soil?.zone || 'default'
+                                      return {coastal:'#00FFFF',hill:'#8B5CF6',
+                                              arid:'#FFD700',plain:'#00FF41'}[z] || '#FF6600'
+                                    })()}11`,
+                                    border:`1px solid ${(() => {
+                                      const z = soil?.zone || 'default'
+                                      return {coastal:'#00FFFF',hill:'#8B5CF6',
+                                              arid:'#FFD700',plain:'#00FF41'}[z] || '#FF6600'
+                                    })()}33`,
+                                    borderRadius:1 }}>
+                        <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                     color: (() => {
+                                       const z = soil?.zone || 'default'
+                                       return {coastal:'#00FFFF',hill:'#8B5CF6',
+                                               arid:'#FFD700',plain:'#00FF41'}[z] || '#FF6600'
+                                     })(),
+                                     margin:0, letterSpacing:2 }}>
+                          {(soil?.zone || 'CENTRAL').toUpperCase()} ZONE
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main recommendation card */}
+                  <div style={{ background:'#0D0D1A',
+                                border:'1px solid #FF6600',
+                                borderRadius:4, padding:20,
+                                boxShadow:'0 0 30px #FF660022',
+                                marginBottom:12 }}>
+
+                    <div style={{ display:'flex', justifyContent:'space-between',
+                                  alignItems:'flex-start', marginBottom:16 }}>
+                      <div>
+                        <p style={{ fontFamily:"'Courier New'", fontSize:9,
+                                     color:'#FF660066', letterSpacing:3,
+                                     margin:'0 0 8px' }}>
+                          // MAGI RECOMMENDATION FOR {selectedDist?.toUpperCase()}
+                        </p>
+                        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                          <span style={{ fontSize:44 }}>{cropInfo.emoji}</span>
+                          <p style={{ fontFamily:"'Orbitron'", fontSize:26,
+                                       fontWeight:900, color:'#FF6600',
+                                       margin:0, letterSpacing:3,
+                                       textShadow:'0 0 20px #FF660088' }}>
+                            {result.recommended_crop?.toUpperCase()}
+                          </p>
+                        </div>
+                      </div>
+                      <div style={{ textAlign:'right' }}>
+                        <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                     color:'#666680', letterSpacing:2,
+                                     margin:'0 0 4px' }}>
+                          CONFIDENCE
+                        </p>
+                        <p style={{ fontFamily:"'Orbitron'", fontSize:30,
+                                     fontWeight:900, color:'#00FF41',
+                                     margin:0,
+                                     textShadow:'0 0 15px #00FF4188' }}>
+                          {result.confidence}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Confidence bar */}
+                    <div style={{ height:6, background:'#FF660011',
+                                   borderRadius:1, overflow:'hidden',
+                                   marginBottom:16 }}>
+                      <motion.div
+                        initial={{ width:0 }}
+                        animate={{ width: result.confidence }}
+                        transition={{ duration:1.2, ease:'easeOut' }}
+                        style={{ height:'100%', borderRadius:1,
+                                  background:'linear-gradient(90deg,#FF660066,#00FF41)',
+                                  boxShadow:'0 0 8px #00FF4166' }} />
+                    </div>
+
+                    {/* Crop stats */}
+                    <div style={{ display:'grid',
+                                  gridTemplateColumns:'repeat(4,1fr)',
+                                  gap:8 }}>
+                      {[
+                        { l:'AVG PROFIT', v:cropInfo.profit,  c:'#FFD700' },
+                        { l:'WATER',      v:cropInfo.water,   c:'#00FFFF' },
+                        { l:'SEASON',     v:cropInfo.season,  c:'#FF6600' },
+                        { l:'DURATION',   v:cropInfo.days,    c:'#8B5CF6' },
+                      ].map(item => (
+                        <div key={item.l} style={{ background:'#0A0A0F',
+                                                    border:`1px solid ${item.c}22`,
+                                                    borderRadius:2, padding:'10px 8px',
+                                                    textAlign:'center' }}>
+                          <p style={{ fontFamily:"'Courier New'", fontSize:7,
+                                       color:'#666680', letterSpacing:2,
+                                       margin:'0 0 4px' }}>
+                            {item.l}
+                          </p>
+                          <p style={{ fontFamily:"'Orbitron'", fontSize:10,
+                                       fontWeight:700, color:item.c,
+                                       margin:0, letterSpacing:1 }}>
+                            {item.v}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top 3 alternatives */}
+                  {result.top3?.length > 1 && (
+                    <div style={{ background:'#0D0D1A',
+                                  border:'1px solid #FF660022',
+                                  borderRadius:4, padding:16,
+                                  marginBottom:12 }}>
+                      <p style={{ fontFamily:"'Courier New'", fontSize:8,
+                                   color:'#FF660044', letterSpacing:3,
+                                   margin:'0 0 10px' }}>
+                        // ALTERNATIVE RECOMMENDATIONS
+                      </p>
+                      {result.top3.slice(1).map((alt, i) => {
+                        const altKey  = alt.crop?.toLowerCase().replace(/[\s_]/g,'')
+                        const altInfo = CROP_INFO[altKey] || { emoji:'🌱' }
+                        return (
+                          <div key={i} style={{
+                            display:'flex', alignItems:'center', gap:10,
+                            padding:'8px 10px', marginBottom:6,
+                            background:'#0A0A0F', borderRadius:2,
+                            border:'1px solid #FF660011'
+                          }}>
+                            <span style={{ fontSize:18 }}>{altInfo.emoji}</span>
+                            <span style={{ fontFamily:"'Orbitron'", fontSize:11,
+                                            color:'#9CA3AF', flex:1, letterSpacing:1 }}>
+                              {alt.crop?.toUpperCase()}
+                            </span>
+                            <div style={{ width:80, height:3,
+                                           background:'#FF660011', borderRadius:1 }}>
+                              <div style={{ height:'100%', borderRadius:1,
+                                             background:'#FF660044',
+                                             width:`${alt.confidence}%` }} />
+                            </div>
+                            <span style={{ fontFamily:"'Courier New'", fontSize:9,
+                                            color:'#FF660066', minWidth:36,
+                                            textAlign:'right' }}>
+                              {alt.confidence}%
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div style={{ display:'grid',
+                                gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                    <button onClick={() => {
+                      setStep('district')
+                      setResult(null)
+                      setWeather(null)
+                      setSoil(null)
+                    }} style={{
+                      padding:'10px', background:'transparent',
+                      border:'1px solid #FF660033', borderRadius:2,
+                      color:'#FF660066', fontFamily:"'Courier New'",
+                      fontSize:9, letterSpacing:2, cursor:'pointer'
+                    }}>
+                      ← CHANGE DISTRICT
+                    </button>
+                    <button onClick={() => {
+                      setStep('map')
+                      setSelectedState(null)
+                      setSelectedDist(null)
+                      setResult(null)
+                      setWeather(null)
+                      setSoil(null)
+                    }} style={{
+                      padding:'10px', background:'transparent',
+                      border:'1px solid #FF660033', borderRadius:2,
+                      color:'#FF660066', fontFamily:"'Courier New'",
+                      fontSize:9, letterSpacing:2, cursor:'pointer'
+                    }}>
+                      ← CHANGE STATE
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          from{ transform:rotate(0deg) }
+          to  { transform:rotate(360deg) }
+        }
+        @keyframes flicker {
+          0%,100%{ opacity:1 }
+          50%    { opacity:0.6 }
+        }
+      `}</style>
+    </div>
+  )
+}

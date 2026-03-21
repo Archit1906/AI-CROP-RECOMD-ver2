@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "dashboard": "முகப்பு (Dashboard)",
+    "crop": "பயிர் பரிந்துரை (Crop Rec)",
+    "disease": "நோய் கண்டறிதல் (Disease)",
+    "weather": "வானிலை (Weather)",
+    "market": "சந்தை விலை (Market)",
+    "chatbot": "செயற்கை நுண்ணறிவு (AI)",
+    "schemes": "அரசு திட்டங்கள் (Schemes)"
+  },
+  "dashboard": {
+    "title": "முகப்பு",
+    "sensors_active": "உணர்விகள் செயல்படுகின்றன",
+    "weather": "இன்றைய வானிலை",
+    "crop": "தற்போதைய பயிர்",
+    "market": "சந்தை எச்சரிக்கை",
+    "health": "பண்ணை ஆரோக்கியம்",
+    "recommend_crop": "பயிர் பரிந்துரை",
+    "check_disease": "நோய் கண்டறிதல்",
+    "ask_ai": "AI யைக் கேள்",
+    "market_prices": "சந்தை விலைகள்",
+    "yield_prediction": "மகசூல் கணிப்பு (KG)",
+    "alerts_feed": "எச்சரிக்கைகள்",
+    "view_all": "அனைத்தும் காண்க →"
+  },
+  "crop_rec": {
+    "title": "நான் என்ன பயிரிட வேண்டும்?",
+    "subtitle": "உங்கள் மண் மற்றும் காலநிலையை சரிசெய்யவும்",
+    "analyze_btn": "என் பண்ணையை பகுப்பாய்வு செய்",
+    "analyzing": "பகுப்பாய்வு செய்யப்படுகிறது...",
+    "compare_mode": "இரண்டு மண்ணை ஒப்பிடுக",
+    "nitrogen": "நைட்ரஜன் (N)",
+    "phosphorus": "பாஸ்பரஸ் (P)",
+    "potassium": "பொட்டாசியம் (K)",
+    "temperature": "வெப்பநிலை",
+    "humidity": "ஈரப்பதம்",
+    "ph": "pH அளவு",
+    "rainfall": "மழையளவு",
+    "optimal_range": "உகந்த அளவு",
+    "view_guide": "பண்ணை வழிகாட்டியைப் பார்க்கவும்",
+    "why_crop": "ஏன் இந்தப் பயிர்?",
+    "avg_profit": "சராசரி லாபம்",
+    "water_need": "நீர் தேவை",
+    "season": "பருவம்",
+    "duration": "காலம்",
+    "previous_analyses": "முந்தைய பகுப்பாய்வுகள்",
+    "match": "பொருத்தம்"
+  }
+}

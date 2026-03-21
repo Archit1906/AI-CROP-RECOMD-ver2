@@ -1,0 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nge-black:      #0A0A0F;   /* deepest background */
+  --nge-navy:       #0D0D1A;   /* card backgrounds */
+  --nge-dark:       #12121F;   /* elevated surfaces */
+  --nge-border:     #FF6600;   /* primary border — NERV orange */
+  --nge-orange:     #FF6600;   /* primary accent */
+  --nge-orange-dim: #CC4400;   /* dimmed orange */
+  --nge-cyan:       #00FFFF;   /* secondary accent */
+  --nge-cyan-dim:   #00CCCC;   /* dimmed cyan */
+  --nge-red:        #FF0033;   /* danger/alert */
+  --nge-yellow:     #FFD700;   /* warning */
+  --nge-white:      #E8E8E8;   /* primary text */
+  --nge-gray:       #666680;   /* secondary text */
+  --nge-green:      #00FF41;   /* matrix green — only for "healthy/safe" states */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #0A0A0F;
+  font-family: 'Rajdhani', sans-serif;
+  color: #E8E8E8;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay effect on entire app */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* NGE corner bracket decoration */
+.nge-corner {
+  position: relative;
+}
+.nge-corner::before,
+.nge-corner::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  border-color: #FF6600;
+  border-style: solid;
+}
+.nge-corner::before {
+  top: -1px; left: -1px;
+  border-width: 2px 0 0 2px;
+}
+.nge-corner::after {
+  bottom: -1px; right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Glitch text animation */
+@keyframes glitch {
+  0%   { text-shadow: 2px 0 #FF6600, -2px 0 #00FFFF; }
+  25%  { text-shadow: -2px 0 #FF6600, 2px 0 #00FFFF; }
+  50%  { text-shadow: 2px 2px #FF6600, -2px -2px #00FFFF; }
+  75%  { text-shadow: -2px 2px #FF6600, 2px -2px #00FFFF; }
+  100% { text-shadow: 2px 0 #FF6600, -2px 0 #00FFFF; }
+}
+.glitch-text {
+  animation: glitch 3s infinite;
+}
+
+/* Pulsing border animation */
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--nge-orange); box-shadow: 0 0 8px #FF660044; }
+  50%      { border-color: #FF8833; box-shadow: 0 0 20px #FF660088; }
+}
+.pulse-border {
+  animation: pulse-border 2s infinite;
+}
+
+/* HUD scan animation */
+@keyframes scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Flicker animation */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92%      { opacity: 1; }
+  93%      { opacity: 0.4; }
+  94%      { opacity: 1; }
+  96%      { opacity: 0.6; }
+  97%      { opacity: 1; }
+}
+.flicker {
+  animation: flicker 5s infinite;
+}
+
+/* NGE card style */
+.nge-card {
+  background: var(--nge-navy);
+  border: 1px solid var(--nge-border);
+  border-radius: 4px;
+  position: relative;
+}
+.nge-card::before {
+  content: attr(data-label);
+  position: absolute;
+  top: -10px; left: 12px;
+  background: var(--nge-black);
+  color: var(--nge-orange);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Hexagon background pattern */
+.hex-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49'%3E%3Cpath d='M14 0 L28 8 L28 24 L14 32 L0 24 L0 8Z' fill='none' stroke='%23FF660011' stroke-width='1'/%3E%3C/svg%3E");
+}
+
+/* Terminal text style */
+.terminal {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--nge-green);
+}
+
+/* Orange glow on hover */
+.nge-hover:hover {
+  box-shadow: 0 0 15px #FF660044;
+  border-color: #FF8833;
+  transition: all 0.2s;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0A0A0F; }
+::-webkit-scrollbar-thumb {
+  background: #FF6600;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: #FF8833; }
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+}
+
+@keyframes nge-glitch {
+  0%   { text-shadow: 2px 0 #FF6600, -2px 0 #00FFFF; clip-path: inset(0 0 95% 0) }
+  10%  { clip-path: inset(10% 0 80% 0) }
+  20%  { clip-path: inset(40% 0 50% 0) }
+  30%  { clip-path: inset(70% 0 20% 0) }
+  40%  { clip-path: inset(0 0 0 0); text-shadow: none }
+  100% { clip-path: inset(0 0 0 0); text-shadow: none }
+}
+.logo-glitch-in {
+  animation: nge-glitch 1s steps(1) forwards;
+}
