@@ -22,3 +22,11 @@ app.include_router(soil.router, prefix="/api", tags=["Soil"])
 @app.get("/")
 def root():
     return {"message": "AmritKrishi API is running 🌱"}
+
+from services.schemes_updater import get_schemes
+
+@app.on_event("startup")
+async def startup_event():
+    # Pre-load schemes into memory on server start
+    await get_schemes()
+    print("✅ Schemes loaded on startup")

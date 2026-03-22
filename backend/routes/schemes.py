@@ -1,49 +1,76 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
+from services.schemes_updater import get_schemes, BASE_SCHEMES, mark_expired_schemes, sort_schemes
+from datetime import datetime
+import asyncio
 
 router = APIRouter()
 
-SCHEMES_DB = [
-    {
-        "name": "PM-KISAN",
-        "description": "₹6,000/year direct income support to farmer families",
-        "eligibility": "All small & marginal farmers",
-        "benefit": "₹6,000 annually in 3 installments",
-        "apply_url": "https://pmkisan.gov.in",
-        "category": "income_support",
-        "states": ["all"]
-    },
-    {
-        "name": "Fasal Bima Yojana (PMFBY)",
-        "description": "Crop insurance scheme for crop failure",
-        "eligibility": "All farmers growing notified crops",
-        "benefit": "Insurance coverage for crop loss",
-        "apply_url": "https://pmfby.gov.in",
-        "category": "insurance",
-        "states": ["all"]
-    },
-    {
-        "name": "Tamil Nadu Chief Minister's Drought Relief",
-        "description": "Relief for farmers affected by drought in TN",
-        "eligibility": "TN farmers in drought-declared districts",
-        "benefit": "₹5,000 per acre compensation",
-        "apply_url": "https://www.tn.gov.in",
-        "category": "drought_relief",
-        "states": ["Tamil Nadu"]
-    },
-    # Add 15+ more schemes
-]
+# Keep schemes in memory — refresh every 6 hours
+_cached_schemes = None
+_last_fetch     = None
+
+async def refresh_schemes():
+    global _cached_schemes, _last_fetch
+    _cached_schemes = await get_schemes()
+    _last_fetch     = datetime.now()
+
+@router.get("/schemes")
+async def get_all_schemes():
+    global _cached_schemes, _last_fetch
+
+    # Refresh if cache is old or empty
+    if _cached_schemes is None or (
+        _last_fetch and (datetime.now() - _last_fetch).seconds > 21600
+    ):
+        await refresh_schemes()
+
+    # Always recompute expiry status (deadline might have passed)
+    fresh = mark_expired_schemes(_cached_schemes or BASE_SCHEMES)
+    active  = [s for s in fresh if not s.get("is_expired")]
+    expired = [s for s in fresh if s.get("is_expired")]
+
+    return {
+        "schemes":       sort_schemes(fresh),
+        "total":         len(fresh),
+        "active_count":  len(active),
+        "expired_count": len(expired),
+        "new_count":     sum(1 for s in fresh if s.get("is_new")),
+        "last_updated":  _last_fetch.isoformat() if _last_fetch else None
+    }
+
+@router.post("/schemes/refresh")
+async def force_refresh(background_tasks: BackgroundTasks):
+    """Force refresh schemes from live sources"""
+    background_tasks.add_task(refresh_schemes)
+    return {"message": "Refresh initiated", "status": "ok"}
 
 class FarmerProfile(BaseModel):
-    state: str
-    crop: str
-    land_acres: float
-    category: str  # small / marginal / large
+    state:       str
+    crop:        str = ""
+    land_acres:  float = 1.0
+    category:    str = "small"
 
-@router.post("/recommend")
-def recommend_schemes(profile: FarmerProfile):
-    relevant = [
-        s for s in SCHEMES_DB
-        if profile.state in s["states"] or "all" in s["states"]
-    ]
-    return {"schemes": relevant, "total": len(relevant)}
+@router.post("/schemes/recommend")
+async def recommend_schemes(profile: FarmerProfile):
+    schemes = _cached_schemes or BASE_SCHEMES
+    fresh   = mark_expired_schemes(schemes)
+
+    relevant = []
+    for s in fresh:
+        if s.get("is_expired"):
+            continue
+        # State matching
+        is_tn_scheme = "tn" in s["id"] or "tamil" in s["name"].lower()
+        if is_tn_scheme and profile.state.lower() not in ["tamil nadu", "tn"]:
+            continue
+        # Loan eligibility
+        if s["category"] == "loan" and profile.land_acres < 0.25:
+            continue
+        relevant.append(s)
+
+    return {
+        "schemes": sort_schemes(relevant),
+        "total":   len(relevant),
+        "state":   profile.state
+    }

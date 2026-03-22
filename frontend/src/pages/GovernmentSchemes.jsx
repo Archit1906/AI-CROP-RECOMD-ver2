@@ -1,251 +1,16 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const SCHEMES = [
-  {
-    id: 1,
-    name: "PM-KISAN",
-    icon: "💰",
-    category: "income_support",
-    level: "CENTRAL",
-    tags: ["DIRECT TRANSFER"],
-    description: "₹6,000/year direct financial support to all farmer families in 3 installments.",
-    grant: "₹6,000 Annually (3 Cycles)",
-    eligibility: "All small & marginal farmers with cultivable land",
-    requirements: "Aadhaar card, Bank account, Land records",
-    applyUrl: "https://pmkisan.gov.in",
-    deadline: "2025-03-31",
-    isNew: false,
-    color: "#FF6600"
-  },
-  {
-    id: 2,
-    name: "Fasal Bima Yojana (PMFBY)",
-    icon: "🛡️",
-    category: "insurance",
-    level: "CENTRAL",
-    tags: ["SHIELD PROTOCOL"],
-    description: "Crop insurance scheme providing financial support against crop loss due to natural calamities.",
-    grant: "Full Asset Coverage",
-    eligibility: "All farmers growing notified crops",
-    requirements: "Land records, Bank account, Crop sowing certificate",
-    applyUrl: "https://pmfby.gov.in",
-    deadline: "2025-06-30",
-    isNew: false,
-    color: "#00FFFF"
-  },
-  {
-    id: 3,
-    name: "TN Drought Relief",
-    icon: "🏜️",
-    category: "drought_relief",
-    level: "STATE",
-    tags: ["EMERGENCY"],
-    description: "Emergency support funds for Tamil Nadu farmers in drought-declared districts.",
-    grant: "₹5,000 Per Acre Compensated",
-    eligibility: "TN farmers in drought-declared districts",
-    requirements: "Aadhaar, Land records, District drought certificate",
-    applyUrl: "https://www.tn.gov.in",
-    deadline: "2025-04-15",
-    isNew: false,
-    color: "#FF0033"
-  },
-  {
-    id: 4,
-    name: "Kisan Credit Card (KCC)",
-    icon: "💳",
-    category: "loan",
-    level: "CENTRAL",
-    tags: ["CREDIT LINE"],
-    description: "Short-term credit for farmers to meet agricultural needs at low interest rates of 4%.",
-    grant: "Up to ₹3 Lakh at 4% interest",
-    eligibility: "All farmers, sharecroppers, tenant farmers",
-    requirements: "Aadhaar, Land records or lease agreement, Bank account",
-    applyUrl: "https://www.nabard.org",
-    deadline: "2025-12-31",
-    isNew: false,
-    color: "#FFD700"
-  },
-  {
-    id: 5,
-    name: "PM Kusum Yojana",
-    icon: "☀️",
-    category: "subsidy",
-    level: "CENTRAL",
-    tags: ["SOLAR PROTOCOL"],
-    description: "Solar pump installation subsidy — 60% government subsidy on solar pumps for irrigation.",
-    grant: "60% Subsidy on Solar Pump",
-    eligibility: "All farmers with irrigated land",
-    requirements: "Aadhaar, Land records, Electricity connection details",
-    applyUrl: "https://pmkusum.mnre.gov.in",
-    deadline: "2025-09-30",
-    isNew: true,
-    color: "#FFD700"
-  },
-  {
-    id: 6,
-    name: "Soil Health Card Scheme",
-    icon: "🧪",
-    category: "subsidy",
-    level: "CENTRAL",
-    tags: ["ANALYSIS PROTOCOL"],
-    description: "Free soil testing and health card providing crop-wise nutrient recommendations.",
-    grant: "Free Soil Testing + Recommendations",
-    eligibility: "All farmers across India",
-    requirements: "Aadhaar card, Land details",
-    applyUrl: "https://soilhealth.dac.gov.in",
-    deadline: "2025-12-31",
-    isNew: false,
-    color: "#8B5CF6"
-  },
-  {
-    id: 7,
-    name: "NABARD Farm Loan",
-    icon: "🏦",
-    category: "loan",
-    level: "CENTRAL",
-    tags: ["TERM CREDIT"],
-    description: "Long-term agricultural investment loans for land development, irrigation, machinery.",
-    grant: "Up to ₹10 Lakh",
-    eligibility: "Farmers with land ownership documents",
-    requirements: "Aadhaar, Land records, Income certificate, Bank account",
-    applyUrl: "https://www.nabard.org",
-    deadline: "2025-12-31",
-    isNew: false,
-    color: "#3B82F6"
-  },
-  {
-    id: 8,
-    name: "TN Chief Minister Farm Relief",
-    icon: "🌾",
-    category: "income_support",
-    level: "STATE",
-    tags: ["TN EXCLUSIVE"],
-    description: "Additional income support for Tamil Nadu farmers — ₹2,000 per season direct transfer.",
-    grant: "₹2,000 Per Season",
-    eligibility: "TN farmers registered in e-District portal",
-    requirements: "TN ration card, Aadhaar, Land records, Bank account",
-    applyUrl: "https://www.tn.gov.in",
-    deadline: "2025-05-31",
-    isNew: true,
-    color: "#FF6600"
-  },
-  {
-    id: 9,
-    name: "Pradhan Mantri Fasal Bima",
-    icon: "🌧️",
-    category: "insurance",
-    level: "CENTRAL",
-    tags: ["WEATHER SHIELD"],
-    description: "Weather-based crop insurance protecting against unseasonal rainfall and temperature.",
-    grant: "Based on crop loss assessment",
-    eligibility: "Farmers in notified areas with loanee farmers",
-    requirements: "Crop loan account, Land records, Aadhaar",
-    applyUrl: "https://pmfby.gov.in",
-    deadline: "2025-07-31",
-    isNew: false,
-    color: "#00FFFF"
-  },
-  {
-    id: 10,
-    name: "e-NAM Market Linkage",
-    icon: "🏪",
-    category: "subsidy",
-    level: "CENTRAL",
-    tags: ["MARKET ACCESS"],
-    description: "Online national agriculture market — sell crops directly to buyers across India.",
-    grant: "Free Market Access + Better Prices",
-    eligibility: "All farmers with produce to sell",
-    requirements: "Aadhaar, Bank account, Mobile number",
-    applyUrl: "https://enam.gov.in",
-    deadline: "2025-12-31",
-    isNew: true,
-    color: "#00FF41"
-  },
-  {
-    id: 11,
-    name: "Rashtriya Krishi Vikas Yojana",
-    icon: "📈",
-    category: "subsidy",
-    level: "CENTRAL",
-    tags: ["DEVELOPMENT"],
-    description: "Infrastructure development grants for farm mechanization and storage facilities.",
-    grant: "Up to ₹25 Lakh for infrastructure",
-    eligibility: "Farmer groups, FPOs, cooperatives",
-    requirements: "Group registration, Project proposal, Land documents",
-    applyUrl: "https://rkvy.nic.in",
-    deadline: "2025-08-31",
-    isNew: false,
-    color: "#FF6600"
-  },
-  {
-    id: 12,
-    name: "TN Horticulture Subsidy",
-    icon: "🍅",
-    category: "subsidy",
-    level: "STATE",
-    tags: ["TN HORTICULTURE"],
-    description: "Tamil Nadu government subsidy for vegetable and fruit crop cultivation inputs.",
-    grant: "50% subsidy on seeds and inputs",
-    eligibility: "TN farmers growing notified horticulture crops",
-    requirements: "TN farmer ID, Land records, Crop declaration",
-    applyUrl: "https://www.tn.gov.in/horticulture",
-    deadline: "2025-06-30",
-    isNew: true,
-    color: "#00FF41"
-  },
-  {
-    id: 13,
-    name: "Agri Infrastructure Fund",
-    icon: "🏗️",
-    category: "loan",
-    level: "CENTRAL",
-    tags: ["INFRASTRUCTURE"],
-    description: "Low-interest loans for post-harvest management infrastructure like cold storage.",
-    grant: "Loans up to ₹2 Crore at 3% subsidy",
-    eligibility: "Farmers, FPOs, Agri-entrepreneurs",
-    requirements: "Business plan, Land documents, Bank account",
-    applyUrl: "https://agriinfra.dac.gov.in",
-    deadline: "2025-10-31",
-    isNew: false,
-    color: "#8B5CF6"
-  },
-  {
-    id: 14,
-    name: "Drought Prone Area Programme",
-    icon: "💧",
-    category: "drought_relief",
-    level: "CENTRAL",
-    tags: ["WATER PROTOCOL"],
-    description: "Watershed development and water conservation grants for drought-prone regions.",
-    grant: "₹12,000 per hectare",
-    eligibility: "Farmers in drought-prone districts",
-    requirements: "Land records, District certification, Bank account",
-    applyUrl: "https://dolr.gov.in",
-    deadline: "2025-05-15",
-    isNew: false,
-    color: "#3B82F6"
-  },
-  {
-    id: 15,
-    name: "PM Kisan Samman Nidhi",
-    icon: "🤝",
-    category: "income_support",
-    level: "CENTRAL",
-    tags: ["INCOME BOOST"],
-    description: "Additional ₹4,000 bonus for farmers who adopt organic farming practices.",
-    grant: "₹4,000 Organic Farming Bonus",
-    eligibility: "Farmers certified under Paramparagat Krishi Vikas Yojana",
-    requirements: "Organic certification, Aadhaar, Land records",
-    applyUrl: "https://pgsindia-ncof.gov.in",
-    deadline: "2025-04-30",
-    isNew: true,
-    color: "#00FF41"
-  }
-]
 
 export default function GovernmentSchemes() {
   const navigate = useNavigate()
+  const [schemes,      setSchemes]      = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [error,        setError]        = useState(null)
+  const [lastUpdated,  setLastUpdated]  = useState(null)
+  const [stats,        setStats]        = useState({})
+  const [newSchemeIds, setNewSchemeIds] = useState(new Set())
+  const prevSchemesRef = useRef([])
+
   const [search, setSearch]               = useState("")
   const [activeFilter, setActiveFilter]   = useState("all")
   const [bookmarks, setBookmarks]         = useState(() => JSON.parse(localStorage.getItem('ak_bookmarks') || '[]'))
@@ -256,6 +21,71 @@ export default function GovernmentSchemes() {
   const [eligibilityForm, setEligibilityForm] = useState({
     state: 'Tamil Nadu', landAcres: '', category: 'small', hasCrops: true
   })
+
+  // Fetch schemes from backend
+  const fetchSchemes = async (showLoader = false) => {
+    if (showLoader) setLoading(true)
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res  = await fetch(`${apiUrl}/api/schemes`)
+      const data = await res.json()
+
+      const prevIds  = new Set(prevSchemesRef.current.map(s => s.id))
+      const newIds   = new Set(
+        data.schemes
+          .filter(s => !prevIds.has(s.id) && prevSchemesRef.current.length > 0)
+          .map(s => s.id)
+      )
+      if (newIds.size > 0) setNewSchemeIds(newIds)
+
+      prevSchemesRef.current = data.schemes
+      setSchemes(data.schemes)
+      setStats({
+        total:   data.total,
+        active:  data.active_count,
+        expired: data.expired_count,
+        isNew:   data.new_count
+      })
+      setLastUpdated(data.last_updated)
+      setError(null)
+    } catch (err) {
+      setError("Could not load schemes. Backend offline.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Initial load
+  useEffect(() => {
+    fetchSchemes(true)
+  }, [])
+
+  // Auto-refresh every 30 minutes
+  useEffect(() => {
+    const interval = setInterval(() => fetchSchemes(false), 30 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Clear new highlight after 5 seconds
+  useEffect(() => {
+    if (newSchemeIds.size > 0) {
+      const t = setTimeout(() => setNewSchemeIds(new Set()), 5000)
+      return () => clearTimeout(t)
+    }
+  }, [newSchemeIds])
+
+  // Countdown timer
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(t)
+  }, [])
+
+  const handleRefresh = async () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    await fetch(`${apiUrl}/api/schemes/refresh`, { method: 'POST' })
+    setTimeout(() => fetchSchemes(false), 2000)
+  }
 
   // Save bookmarks to localStorage whenever they change
   useEffect(() => {
@@ -280,8 +110,8 @@ export default function GovernmentSchemes() {
   // FIX: filtered schemes — search + filter both work
   const filtered = useMemo(() => {
     let list = showBookmarked
-      ? SCHEMES.filter(s => bookmarks.includes(s.id))
-      : SCHEMES
+      ? schemes.filter(s => bookmarks.includes(s.id))
+      : schemes.filter(s => !s.is_expired)
 
     if (activeFilter !== 'all') {
       list = list.filter(s => s.category === activeFilter)
@@ -297,18 +127,20 @@ export default function GovernmentSchemes() {
     }
 
     return list
-  }, [search, activeFilter, showBookmarked, bookmarks])
+  }, [schemes, search, activeFilter, showBookmarked, bookmarks])
 
-  // Countdown timer
   const getCountdown = (deadlineStr) => {
-    const now      = new Date()
     const deadline = new Date(deadlineStr)
     const diff     = deadline - now
-    if (diff <= 0) return { label: 'EXPIRED', color: '#FF0033', urgent: true }
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    if (days <= 7)  return { label: `${days}D LEFT`, color: '#FF0033', urgent: true  }
-    if (days <= 30) return { label: `${days}D LEFT`, color: '#FFD700', urgent: false }
-    return { label: `${days}D LEFT`, color: '#00FF41', urgent: false }
+    if (diff <= 0) return { label:'EXPIRED', color:'#FF0033', urgent:true, expired:true }
+    const days    = Math.floor(diff / 86400000)
+    const hours   = Math.floor((diff % 86400000) / 3600000)
+    const minutes = Math.floor((diff % 3600000) / 60000)
+    const seconds = Math.floor((diff % 60000) / 1000)
+    if (days === 0)  return { label:`${hours}h ${minutes}m ${seconds}s`, color:'#FF0033', urgent:true,  expired:false }
+    if (days <= 7)   return { label:`${days}d ${hours}h left`,           color:'#FF0033', urgent:true,  expired:false }
+    if (days <= 30)  return { label:`${days} days left`,                 color:'#FFD700', urgent:false, expired:false }
+    return              { label:`${days} days left`,                     color:'#00FF41', urgent:false, expired:false }
   }
 
   const checkEligibility = () => {
@@ -316,7 +148,7 @@ export default function GovernmentSchemes() {
     const acres = parseFloat(landAcres) || 0
     const results = []
 
-    SCHEMES.forEach(scheme => {
+    schemes.forEach(scheme => {
       let eligible = true
       let reasons  = []
 
@@ -365,6 +197,17 @@ export default function GovernmentSchemes() {
         </div>
 
         <div style={{ display:'flex', gap:10 }}>
+          {/* Refresh button */}
+          <button onClick={handleRefresh} style={{
+            padding: '8px 14px', background: 'transparent',
+            border: '1px solid #FF660044', borderRadius: 2,
+            color: '#FF660066', fontFamily: "'Courier New'",
+            fontSize: 9, letterSpacing: 2, cursor: 'pointer',
+            display: 'flex', alignItems: 'center'
+          }}>
+            ↻ REFRESH
+          </button>
+
           {/* Bookmarks toggle */}
           <button onClick={() => setShowBookmarked(!showBookmarked)}
             style={{
@@ -391,13 +234,21 @@ export default function GovernmentSchemes() {
         </div>
       </div>
 
+      {/* Last updated indicator */}
+      {lastUpdated && (
+        <p style={{ fontFamily: "'Courier New'", fontSize: 8,
+                    color: '#444', letterSpacing: 2, margin: '-16px 0 24px' }}>
+          // LAST SYNC: {new Date(lastUpdated).toLocaleString('en-IN')}
+        </p>
+      )}
+
       {/* Stats bar */}
       <div style={{ display:'flex', gap:12, marginBottom:20 }}>
         {[
-          { label:'TOTAL DIRECTIVES', value:SCHEMES.length,                               color:'#FF6600' },
-          { label:'ACTIVE SCHEMES',   value:SCHEMES.filter(s=>new Date(s.deadline)>new Date()).length, color:'#00FF41' },
-          { label:'NEW THIS SEASON',  value:SCHEMES.filter(s=>s.isNew).length,            color:'#FFD700' },
-          { label:'BOOKMARKED',       value:bookmarks.length,                              color:'#00FFFF' },
+          { label:'TOTAL DIRECTIVES', value:stats.total || 0,                               color:'#FF6600' },
+          { label:'ACTIVE SCHEMES',   value:stats.active || 0,                              color:'#00FF41' },
+          { label:'NEW THIS SEASON',  value:stats.isNew || 0,                               color:'#FFD700' },
+          { label:'EXPIRED',          value:stats.expired || 0,                             color:'#FF0033' },
         ].map(stat => (
           <div key={stat.label} style={{
             background:'#0D0D1A', border:`1px solid ${stat.color}33`,
@@ -469,6 +320,64 @@ export default function GovernmentSchemes() {
         </p>
       </div>
 
+      {/* New scheme notification banner */}
+      {newSchemeIds.size > 0 && (
+        <div style={{
+          background: '#00FF4111', border: '1px solid #00FF41',
+          borderRadius: 4, padding: '12px 16px', marginBottom: 16,
+          display: 'flex', alignItems: 'center', gap: 10,
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <span style={{ fontSize: 18 }}>🆕</span>
+          <p style={{ fontFamily: "'Orbitron'", fontSize: 12,
+                       color: '#00FF41', margin: 0, letterSpacing: 2 }}>
+            {newSchemeIds.size} NEW DIRECTIVE{newSchemeIds.size > 1 ? 'S' : ''} ADDED
+          </p>
+        </div>
+      )}
+
+      {/* Expired scheme tombstone */}
+      {schemes.filter(s => s.is_expired).length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontFamily: "'Courier New'", fontSize: 8,
+                       color: '#FF000044', letterSpacing: 3, margin: '0 0 8px' }}>
+            // EXPIRED DIRECTIVES — {schemes.filter(s => s.is_expired).length} SCHEMES CLOSED
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {schemes.filter(s => s.is_expired).map(s => (
+              <div key={s.id} style={{
+                background: '#1A0000', border: '1px solid #FF000022',
+                borderRadius: 2, padding: '6px 12px',
+                opacity: 0.5
+              }}>
+                <p style={{ fontFamily: "'Courier New'", fontSize: 9,
+                             color: '#FF0033', margin: 0,
+                             textDecoration: 'line-through', letterSpacing: 1 }}>
+                  {s.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 16 }}>
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} style={{
+              background: '#0D0D1A', border: '1px solid #FF660011',
+              borderRadius: 4, padding: 20, height: 280,
+              animation: 'shimmer 1.5s infinite'
+            }}>
+              <div style={{ height: 12, background: '#FF660011', borderRadius: 2, marginBottom: 12 }} />
+              <div style={{ height: 20, background: '#FF660011', borderRadius: 2, marginBottom: 8, width: '60%' }} />
+              <div style={{ height: 60, background: '#FF660011', borderRadius: 2 }} />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Schemes grid */}
       {filtered.length === 0 ? (
         <div style={{ textAlign:'center', padding:'60px 20px' }}>
@@ -500,7 +409,7 @@ export default function GovernmentSchemes() {
                 }}>
 
                 {/* NEW badge */}
-                {scheme.isNew && (
+                {scheme.is_new && (
                   <div style={{
                     position:'absolute', top:-1, right:40,
                     background:'#00FF41', color:'#000',
@@ -660,7 +569,7 @@ export default function GovernmentSchemes() {
                 {/* Action buttons — FIX: both wired */}
                 <div style={{ display:'flex', gap:8 }}>
                   <button
-                    onClick={() => window.open(scheme.applyUrl, '_blank')}
+                    onClick={() => window.open(scheme.apply_url, '_blank')}
                     style={{
                       flex:1, padding:'10px 8px',
                       background:`${scheme.color}22`,
@@ -819,6 +728,20 @@ export default function GovernmentSchemes() {
           </div>
         </div>
       )}
+      <style>{`
+        @keyframes shimmer {
+          0%,100%{ opacity:0.4 }
+          50%    { opacity:0.7 }
+        }
+        @keyframes fadeIn {
+          from{ opacity:0; transform:translateY(-10px) }
+          to  { opacity:1; transform:translateY(0) }
+        }
+        @keyframes newPulse {
+          0%,100%{ box-shadow:0 0 0 0 rgba(0,255,65,0.4) }
+          50%    { box-shadow:0 0 0 8px rgba(0,255,65,0) }
+        }
+      `}</style>
     </div>
   )
 }
