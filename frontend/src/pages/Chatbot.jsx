@@ -1,13 +1,14 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useRef, useEffect } from 'react'
 import api from '../api/axios'
 
 const QUICK_SUGGESTIONS = [
-  { text: "Which crop should I grow?",    icon: "🌾" },
-  { text: "My tomato leaves have spots",  icon: "🍅" },
-  { text: "Today's weather advice",       icon: "🌤️" },
-  { text: "PM-KISAN scheme details",      icon: "💰" },
-  { text: "Best fertilizer for rice",     icon: "🌱" },
-  { text: "How to control pests?",        icon: "🐛" },
+  { key: "sug1", icon: "🌾" },
+  { key: "sug2", icon: "🍅" },
+  { key: "sug3", icon: "🌤️" },
+  { key: "sug4", icon: "💰" },
+  { key: "sug5", icon: "🌱" },
+  { key: "sug6", icon: "🐛" },
 ]
 
 const LANGUAGES = [
@@ -100,10 +101,11 @@ function Message({ msg }) {
 }
 
 export default function Chatbot() {
+  const { t, i18n } = useTranslation()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [language, setLanguage] = useState('en')
+  const language = i18n.language || 'en'
   const [showLangMenu, setShowLangMenu] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
@@ -156,7 +158,7 @@ export default function Chatbot() {
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: '⚠️ WARNING: MAGI UPLINK FAILED. CHECK SYSTEM CONNECTION.',
+        content: t('chat_nge.uplink_fail'),
         time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
       }])
     } finally {
@@ -199,14 +201,14 @@ export default function Chatbot() {
           }}>🤖</div>
           <div>
             <p style={{ color: '#FF6600', fontWeight: 900, fontSize: 18, margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 2, textShadow: '0 0 10px #FF660088' }}>
-              MAGI QUERY INTERFACE
+              {t('chat_nge.title')}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               <div style={{ width: 8, height: 8, borderRadius: '2px',
                             background: '#00FF41',
                             boxShadow: '0 0 6px #00FF41',
                             animation: 'flicker 3s infinite' }} />
-              <p style={{ color: '#00FF41', fontSize: 10, margin: 0, fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>SYSTEM: ONLINE • CONNECTION: SECURE</p>
+              <p style={{ color: '#00FF41', fontSize: 10, margin: 0, fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>{t('chat_nge.sys_status')}</p>
             </div>
           </div>
         </div>
@@ -232,7 +234,7 @@ export default function Chatbot() {
             }}>
               {LANGUAGES.map(lang => (
                 <button key={lang.code}
-                  onClick={() => { setLanguage(lang.code); setShowLangMenu(false) }}
+                  onClick={() => { i18n.changeLanguage(lang.code); setShowLangMenu(false) }}
                   style={{
                     display: 'block', width: '100%', padding: '10px 16px',
                     background: language === lang.code ? '#FF660022' : 'transparent',
@@ -281,7 +283,7 @@ export default function Chatbot() {
         {messages.length <= 1 && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             {QUICK_SUGGESTIONS.map((s, i) => (
-              <button key={i} onClick={() => sendMessage(s.text)}
+              <button key={i} onClick={() => sendMessage(t('chat_nge.' + s.key))}
                 style={{
                   padding: '6px 14px', borderRadius: 2, border: '1px solid #FF660066',
                   background: '#0A0A0F', color: '#E8E8E8', fontSize: 11, cursor: 'pointer',
@@ -290,7 +292,7 @@ export default function Chatbot() {
                 }}
                 onMouseEnter={e => { e.target.style.borderColor = '#FF6600'; e.target.style.background = '#FF660022'; e.target.style.color = '#FF6600' }}
                 onMouseLeave={e => { e.target.style.borderColor = '#FF660066'; e.target.style.background = '#0A0A0F'; e.target.style.color = '#E8E8E8' }}>
-                <span style={{color: '#FF6600'}}>// QUERY:</span> {s.text}
+                <span style={{color: '#FF6600'}}>{t('chat_nge.query')}</span> {t('chat_nge.' + s.key)}
               </button>
             ))}
           </div>
@@ -304,11 +306,7 @@ export default function Chatbot() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={
-              language === 'ta' ? 'உங்கள் கேள்வியை தட்டச்சு செய்யுங்கள்...' :
-              language === 'hi' ? 'अपना सवाल टाइप करें...' :
-              'ENTER QUERY / TYPE COMMAND...'
-            }
+            placeholder={t('chat_nge.placeholder')}
             disabled={loading}
             autoFocus
             style={{
@@ -334,11 +332,11 @@ export default function Chatbot() {
               transition: 'all 0.15s', pointerEvents: 'all', padding: '0 24px',
               fontFamily: "'Orbitron', sans-serif", letterSpacing: 2, fontWeight: 700
             }}>
-            {loading ? 'PROCESSING...' : 'TRANSMIT ▻'}
+            {loading ? t('chat_nge.processing') : t('chat_nge.transmit')}
           </button>
         </div>
         <p style={{ color: '#666680', fontSize: 10, textAlign: 'center', margin: '8px 0 0', fontFamily: "'Share Tech Mono', monospace" }}>
-          // NERV MAGI SYSTEM OPERATIONAL — EXERCISE CAUTION WITH AI RECOMMENDATIONS
+          {t('chat_nge.caution')}
         </p>
       </div>
 

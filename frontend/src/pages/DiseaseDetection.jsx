@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import api from '../api/axios'
 
@@ -147,6 +148,7 @@ const MOCK_RESULT = {
 }
 
 export default function DiseaseDetection() {
+  const { t } = useTranslation()
   const [image,        setImage]        = useState(null)        // base64 preview
   const [imageFile,    setImageFile]    = useState(null)        // File object
   const [result,       setResult]       = useState(null)
@@ -187,11 +189,11 @@ export default function DiseaseDetection() {
 
   // Scan animation phases
   const PHASES = [
-    "// INITIALIZING SENSOR GRID...",
-    "// LOADING NEURAL NETWORK...",
-    "// ANALYZING BIOLOGICAL DATA...",
-    "// CROSS-REFERENCING PATHOGEN DATABASE...",
-    "// GENERATING THREAT ASSESSMENT...",
+    t('dis_nge.phase1'),
+    t('dis_nge.phase2'),
+    t('dis_nge.phase3'),
+    t('dis_nge.phase4'),
+    t('dis_nge.phase5'),
   ]
 
   // Initiate scan — FIX: actually calls API
@@ -278,16 +280,16 @@ export default function DiseaseDetection() {
                     borderBottom:'1px solid #FF000033' }}>
         <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                     color:'#FF000066', letterSpacing:4, margin:'0 0 6px' }}>
-          // MAGI SENSOR GRID
+          {t('dis_nge.sys_label')}
         </p>
         <h1 style={{ fontFamily:"'Orbitron'", fontSize:26, fontWeight:900,
                      color:'#FF0033', margin:'0 0 6px', letterSpacing:4,
                      textShadow:'0 0 20px #FF003366' }}>
-          BIOLOGICAL THREAT DETECTION
+          {t('dis_nge.title')}
         </h1>
         <p style={{ fontFamily:"'Share Tech Mono'", fontSize:10,
                     color:'#666680', margin:0, letterSpacing:3 }}>
-          UPLOAD VISUAL DATA FOR IMMEDIATE AI DIAGNOSIS
+          {t('dis_nge.subtitle')}
         </p>
       </div>
 
@@ -299,7 +301,7 @@ export default function DiseaseDetection() {
                    border:'1px solid #FF660044', borderRadius:2,
                    color:'#FF6600', fontFamily:"'Share Tech Mono'",
                    fontSize:10, letterSpacing:2, cursor:'pointer' }}>
-          {showHistory ? '▲ HIDE' : '▼ SHOW'} SCAN HISTORY ({history.length})
+          {showHistory ? t('dis_nge.hide_hist') : t('dis_nge.show_hist')} {t('dis_nge.scan_hist')} ({history.length})
         </button>
       )}
 
@@ -349,7 +351,7 @@ export default function DiseaseDetection() {
                       borderRadius:2, padding:'20px' }}>
           <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                       color:'#FF000066', letterSpacing:3, margin:'0 0 14px' }}>
-            // VISUAL DATA INPUT
+            {t('dis_nge.vis_input')}
           </p>
 
           {/* Drop zone — FIX: all handlers wired */}
@@ -385,7 +387,7 @@ export default function DiseaseDetection() {
                 )}
                 <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                              color:'#FF660066', margin:'8px 0 0', letterSpacing:2 }}>
-                  // TARGET ACQUIRED — CLICK TO REPLACE
+                  {t('dis_nge.target_acq')}
                 </p>
               </>
             ) : (
@@ -394,11 +396,11 @@ export default function DiseaseDetection() {
                                color:'#FF0033' }}>⬆</div>
                 <p style={{ fontFamily:"'Orbitron'", fontSize:12,
                              color:'#FF000066', margin:'0 0 6px', letterSpacing:2 }}>
-                  DROP VISUAL DATA HERE
+                  {t('dis_nge.drop_data')}
                 </p>
                 <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                              color:'#444', margin:0, letterSpacing:1 }}>
-                  OR CLICK TO BROWSE LOCAL ARCHIVE
+                  {t('dis_nge.browse_local')}
                 </p>
               </>
             )}
@@ -421,7 +423,7 @@ export default function DiseaseDetection() {
                        border:'1px solid #FF000044', borderRadius:2,
                        color:'#FF000088', fontFamily:"'Share Tech Mono'",
                        fontSize:10, letterSpacing:2, cursor:'pointer' }}>
-              📷 CAPTURE
+              {t('dis_nge.capture')}
             </button>
             <button onClick={() => fileInputRef.current?.click()}
               style={{ flex:1, padding:'10px 8px',
@@ -429,7 +431,7 @@ export default function DiseaseDetection() {
                        border:'1px solid #FF000044', borderRadius:2,
                        color:'#FF000088', fontFamily:"'Share Tech Mono'",
                        fontSize:10, letterSpacing:2, cursor:'pointer' }}>
-              📁 BROWSE
+              {t('dis_nge.browse')}
             </button>
           </div>
 
@@ -473,7 +475,7 @@ export default function DiseaseDetection() {
             }}
             onMouseEnter={e => { if(image && !loading) e.currentTarget.style.background='#FF000044' }}
             onMouseLeave={e => { if(image && !loading) e.currentTarget.style.background='#FF000022' }}>
-            {loading ? `⚙ ${PHASES[scanPhase]?.replace('// ','')}` : '⚙ INITIATE SCAN ►'}
+            {loading ? `⚙ ${PHASES[scanPhase]?.replace('// ','')}` : t('dis_nge.init_scan')}
           </button>
         </div>
 
@@ -483,7 +485,7 @@ export default function DiseaseDetection() {
                       transition:'border-color 0.3s' }}>
           <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                       color:'#FF000066', letterSpacing:3, margin:'0 0 14px' }}>
-            {result ? '// THREAT ASSESSMENT COMPLETE' : '// AWAITING DATA'}
+            {result ? t('dis_nge.threat_comp') : t('dis_nge.await_data')}
           </p>
 
           {!result && !loading && (
@@ -494,9 +496,7 @@ export default function DiseaseDetection() {
               <p style={{ fontFamily:"'Share Tech Mono'", fontSize:10,
                            color:'#333', textAlign:'center',
                            lineHeight:1.8, letterSpacing:1 }}>
-                SYSTEM IDLE.<br/>
-                UPLOAD LEAF IMAGERY AND<br/>
-                INITIATE SCAN FOR PATHOGEN ANALYSIS.
+                {t('dis_nge.idle_msg').split('\n').map((line, i) => <span key={i}>{line}<br/></span>)}
               </p>
             </div>
           )}
@@ -513,7 +513,7 @@ export default function DiseaseDetection() {
               <p style={{ fontFamily:"'Orbitron'", fontSize:12,
                            color:'#FF0033', letterSpacing:3,
                            textShadow:'0 0 10px #FF003366' }}>
-                SCANNING...
+                {t('dis_nge.scanning')}
               </p>
             </div>
           )}
@@ -530,7 +530,7 @@ export default function DiseaseDetection() {
                 <div>
                   <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                                color: info.threatColor, letterSpacing:3, margin:'0 0 4px' }}>
-                    {isHealthy ? '// TARGET NOMINAL' : '// THREAT IDENTIFIED'}
+                    {isHealthy ? t('dis_nge.nom') : t('dis_nge.threat_id')}
                   </p>
                   <p style={{ fontFamily:"'Orbitron'", fontSize:16, fontWeight:900,
                                color: info.threatColor, margin:0, letterSpacing:2,
@@ -541,7 +541,7 @@ export default function DiseaseDetection() {
                 <div style={{ textAlign:'right' }}>
                   <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                color:'#666680', margin:'0 0 4px', letterSpacing:2 }}>
-                    THREAT LEVEL
+                    {t('dis_nge.threat_level')}
                   </p>
                   <span style={{
                     background:`${info.threatColor}22`,
@@ -561,7 +561,7 @@ export default function DiseaseDetection() {
                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
                   <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                                color:'#666680', margin:0, letterSpacing:2 }}>
-                    DETECTION CONFIDENCE
+                    {t('dis_nge.det_conf')}
                   </p>
                   <p style={{ fontFamily:"'Orbitron'", fontSize:14, fontWeight:900,
                                color: info.threatColor, margin:0,
@@ -585,7 +585,7 @@ export default function DiseaseDetection() {
                   <div style={{ marginTop:10 }}>
                     <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                  color:'#444', letterSpacing:2, margin:'0 0 6px' }}>
-                      ALTERNATIVE MATCHES
+                      {t('dis_nge.alt_match')}
                     </p>
                     {result.top3.slice(1).map((alt, i) => {
                       const altInfo = DISEASE_DATA[alt.disease]
@@ -615,7 +615,7 @@ export default function DiseaseDetection() {
                   <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
                     <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                                  color:'#666680', margin:0, letterSpacing:2 }}>
-                      SPREAD RISK INDEX
+                      {t('dis_nge.spread_risk')}
                     </p>
                     <p style={{ fontFamily:"'Orbitron'", fontSize:12, fontWeight:700,
                                  color: info.spreadRisk > 80 ? '#FF0033' :
@@ -638,11 +638,11 @@ export default function DiseaseDetection() {
 
               {/* Cure & Treatment panel */}
               {[
-                { label:'PATHOGEN', value:info.cause,       color:'#FF6600' },
-                { label:'SYMPTOMS', value:info.symptoms,    color:'#FFD700' },
-                { label:'COUNTERMEASURE PROTOCOL', value:info.cure, color:'#00FFFF' },
-                { label:'CHEMICAL AGENT', value:info.pesticide, color:'#8B5CF6' },
-                { label:'PREVENTION PROTOCOL', value:info.prevention, color:'#00FF41' },
+                { label:t('dis_nge.lbl_path'), value:info.cause,       color:'#FF6600' },
+                { label:t('dis_nge.lbl_symp'), value:info.symptoms,    color:'#FFD700' },
+                { label:t('dis_nge.lbl_cure'), value:info.cure, color:'#00FFFF' },
+                { label:t('dis_nge.lbl_pest'), value:info.pesticide, color:'#8B5CF6' },
+                { label:t('dis_nge.lbl_prev'), value:info.prevention, color:'#00FF41' },
               ].map(item => (
                 <div key={item.label}
                   style={{ background:'#0A0A0F',
@@ -665,7 +665,7 @@ export default function DiseaseDetection() {
                          background:'transparent', border:'1px solid #FF000044',
                          color:'#FF000066', fontFamily:"'Share Tech Mono'",
                          fontSize:10, letterSpacing:3, cursor:'pointer', borderRadius:2 }}>
-                // CLEAR AND RESCAN
+                {t('dis_nge.clear_rescan')}
               </button>
             </div>
           )}

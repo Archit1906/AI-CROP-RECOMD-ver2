@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useInView, animate } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import AnimatedBackground from '../components/AnimatedBackground'
 
 // ── TYPED TEXT HOOK ──────────────────────────────────────────
@@ -138,6 +139,7 @@ function NavDots({ active }) {
 
 // ── MAIN COMPONENT ───────────────────────────────────────────
 export default function Dashboard() {
+  const { t } = useTranslation()
   const navigate   = useNavigate()
   const [activeNav, setActiveNav] = useState(0)
   const { scrollY } = useScroll()
@@ -194,11 +196,11 @@ export default function Dashboard() {
           }}>
             <span style={{ fontFamily:"'Courier New'", fontSize: 9,
                             color: '#FF660066', letterSpacing: 4 }}>
-              // NERV AGRICULTURAL DIVISION // CLASSIFIED
+              {t('dash_nge.nav_sys_class')}
             </span>
             <span style={{ fontFamily:"'Courier New'", fontSize: 9,
                             color: '#FF660066', letterSpacing: 4 }}>
-              MAGI SYSTEM v2.0 // ONLINE
+              {t('dash_nge.nav_sys_online')}
             </span>
           </div>
 
@@ -218,7 +220,7 @@ export default function Dashboard() {
               style={{ fontFamily:"'Courier New'", fontSize: 11,
                        color: '#FF660088', letterSpacing: 6,
                        margin: '0 0 24px', textTransform: 'uppercase' }}>
-              // MAGI AGRICULTURAL INTELLIGENCE SYSTEM
+              {t('dash_nge.hero_eyebrow')}
             </motion.p>
 
             {/* Main title */}
@@ -226,7 +228,7 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.8 }}>
-              <GlitchText size={72}>AMRITKRISHI</GlitchText>
+              <GlitchText size={72}>{t('dash_nge.hero_title')}</GlitchText>
             </motion.div>
 
             {/* Subtitle typed */}
@@ -251,7 +253,7 @@ export default function Dashboard() {
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FF660044'}
                 onMouseLeave={e => e.currentTarget.style.background = '#FF660022'}>
-                ENTER SYSTEM ►
+                {t('dash_nge.enter_sys')}
               </button>
               <a href="#mission" style={{ textDecoration: 'none' }}>
                 <button style={{
@@ -265,7 +267,7 @@ export default function Dashboard() {
                 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor='#FF6600'; e.currentTarget.style.color='#FF6600' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor='#FF660044'; e.currentTarget.style.color='#FF660088' }}>
-                  LEARN MORE ↓
+                  {t('dash_nge.learn_more')}
                 </button>
               </a>
             </motion.div>
@@ -276,7 +278,7 @@ export default function Dashboard() {
               transition={{ duration: 2, repeat: Infinity }}
               style={{ marginTop: 60, color: '#FF660044',
                        fontFamily: "'Courier New'", fontSize: 11 }}>
-              ↓ SCROLL TO EXPLORE ↓
+              {t('dash_nge.scroll')}
             </motion.div>
           </div>
         </motion.div>
@@ -377,11 +379,12 @@ export default function Dashboard() {
 
 // ── HERO SUBTITLE ────────────────────────────────────────────
 function HeroSubtitle() {
+  const { t } = useTranslation()
   const lines = [
-    "AI-powered crop intelligence for Indian farmers",
-    "Real-time disease detection from leaf images",
-    "Live market prices from 500+ mandi locations",
-    "Available in Tamil | Hindi | English"
+    t('dash_nge.hero_sub1'),
+    t('dash_nge.hero_sub2'),
+    t('dash_nge.hero_sub3'),
+    t('dash_nge.hero_sub4')
   ]
   const [lineIndex, setLineIndex] = useState(0)
   const { displayed, done } = useTyped(lines[lineIndex], 35, 800)
@@ -442,10 +445,11 @@ function HeroParticles() {
 
 // ── MISSION SECTION ──────────────────────────────────────────
 function MissionSection() {
+  const { t } = useTranslation()
   const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
   const { displayed } = useTyped(
-    '> 140 MILLION INDIAN FARMERS. MOST WITHOUT ACCESS TO MODERN AGRICULTURAL INTELLIGENCE. AMRITKRISHI CHANGES THAT.',
+    t('dash_nge.mission_typed'),
     20, inView ? 0 : 99999
   )
 
@@ -457,7 +461,7 @@ function MissionSection() {
         style={{ fontFamily:"'Courier New'", fontSize: 9,
                  color: '#FF660066', letterSpacing: 4,
                  margin: '0 0 20px' }}>
-        // MISSION DIRECTIVE
+        {t('dash_nge.mission_dir')}
       </motion.p>
 
       <motion.div
@@ -468,7 +472,7 @@ function MissionSection() {
                      fontWeight: 900, color: '#FF6600',
                      letterSpacing: 4, margin: '0 0 40px',
                      textShadow: '0 0 30px #FF660066' }}>
-          THE PROBLEM
+          {t('dash_nge.mission_title')}
         </h2>
       </motion.div>
 
@@ -491,9 +495,9 @@ function MissionSection() {
       <div style={{ display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {[
-          { stat: '20-40%',  label: 'Crop yield lost to disease annually',    color: '#FF0033' },
-          { stat: '₹2L Cr',  label: 'Govt schemes unclaimed every year',      color: '#FFD700' },
-          { stat: '70%',     label: 'Farmers exploited by price middlemen',   color: '#FF6600' },
+          { stat: '20-40%',  label: t('dash_nge.prob1_label'),    color: '#FF0033' },
+          { stat: '₹2L Cr',  label: t('dash_nge.prob2_label'),      color: '#FFD700' },
+          { stat: '70%',     label: t('dash_nge.prob3_label'),   color: '#FF6600' },
         ].map((item, i) => (
           <motion.div key={i}
             initial={{ opacity: 0, y: 20 }}
@@ -527,56 +531,57 @@ function MissionSection() {
 
 // ── FEATURES SECTION ─────────────────────────────────────────
 function FeaturesSection({ navigate }) {
+  const { t } = useTranslation()
   const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-50px' })
 
   const FEATURES = [
     {
       id: 'crop', icon: '🌾', color: '#FF6600',
-      title: 'CROP INTELLIGENCE',
-      subtitle: 'AI-powered recommendation',
-      desc: 'Select any Indian state and district. Our Random Forest model analyzes real-time soil + weather data and recommends the highest-yield crop with confidence score.',
-      stats: ['22 crop types', '93% accuracy', 'All 28 states'],
+      title: t('dash_nge.feat1_title'),
+      subtitle: t('dash_nge.feat1_sub'),
+      desc: t('dash_nge.feat1_desc'),
+      stats: [t('dash_nge.feat1_s1'), t('dash_nge.feat1_s2'), t('dash_nge.feat1_s3')],
       path: '/crop'
     },
     {
       id: 'disease', icon: '🔬', color: '#FF0033',
-      title: 'BIOLOGICAL THREAT SCAN',
-      subtitle: 'CNN disease detection',
-      desc: 'Upload a leaf photo. Our MobileNetV2 neural network scans for 38 disease classes across 12 plant species and delivers diagnosis with treatment protocol.',
-      stats: ['38 disease classes', '85%+ accuracy', 'Real-time scan'],
+      title: t('dash_nge.feat2_title'),
+      subtitle: t('dash_nge.feat2_sub'),
+      desc: t('dash_nge.feat2_desc'),
+      stats: [t('dash_nge.feat2_s1'), t('dash_nge.feat2_s2'), t('dash_nge.feat2_s3')],
       path: '/disease'
     },
     {
       id: 'weather', icon: '🌤️', color: '#00FFFF',
-      title: 'ATMOSPHERIC INTELLIGENCE',
-      subtitle: 'Live weather + farming alerts',
-      desc: 'Real-time weather for every Indian city via OpenWeatherMap. Farming-specific alerts for drought, frost, fungal risk, and optimal sowing windows.',
-      stats: ['Live data', '7-day forecast', 'Farming alerts'],
+      title: t('dash_nge.feat3_title'),
+      subtitle: t('dash_nge.feat3_sub'),
+      desc: t('dash_nge.feat3_desc'),
+      stats: [t('dash_nge.feat3_s1'), t('dash_nge.feat3_s2'), t('dash_nge.feat3_s3')],
       path: '/weather'
     },
     {
       id: 'market', icon: '📊', color: '#FFD700',
-      title: 'MARKET INTEL',
-      subtitle: 'Live mandi prices',
-      desc: 'Real-time crop prices from Agmarknet across all Indian states. Price trend analytics, best-time-to-sell recommendations, and AI price prediction.',
-      stats: ['500+ mandis', 'Live prices', 'Price prediction'],
+      title: t('dash_nge.feat4_title'),
+      subtitle: t('dash_nge.feat4_sub'),
+      desc: t('dash_nge.feat4_desc'),
+      stats: [t('dash_nge.feat4_s1'), t('dash_nge.feat4_s2'), t('dash_nge.feat4_s3')],
       path: '/market'
     },
     {
       id: 'chat', icon: '🤖', color: '#8B5CF6',
-      title: 'MAGI QUERY INTERFACE',
-      subtitle: 'Multilingual AI chatbot',
-      desc: 'Powered by Google Gemini. Ask anything about farming in Tamil, Hindi, or English. Context-aware responses tailored to Indian agriculture.',
-      stats: ['3 languages', 'Gemini AI', '24/7 available'],
+      title: t('dash_nge.feat5_title'),
+      subtitle: t('dash_nge.feat5_sub'),
+      desc: t('dash_nge.feat5_desc'),
+      stats: [t('dash_nge.feat5_s1'), t('dash_nge.feat5_s2'), t('dash_nge.feat5_s3')],
       path: '/chat'
     },
     {
       id: 'schemes', icon: '🏛️', color: '#00FF41',
-      title: 'FEDERAL DIRECTIVES',
-      subtitle: 'Government scheme finder',
-      desc: '15+ government schemes including PM-KISAN, PMFBY, and state-specific programs. Eligibility checker, deadline countdown, and direct application links.',
-      stats: ['15+ schemes', 'Eligibility check', 'Direct apply'],
+      title: t('dash_nge.feat6_title'),
+      subtitle: t('dash_nge.feat6_sub'),
+      desc: t('dash_nge.feat6_desc'),
+      stats: [t('dash_nge.feat6_s1'), t('dash_nge.feat6_s2'), t('dash_nge.feat6_s3')],
       path: '/schemes'
     },
   ]
@@ -590,13 +595,13 @@ function FeaturesSection({ navigate }) {
         <p style={{ fontFamily:"'Courier New'", fontSize: 9,
                      color: '#FF660066', letterSpacing: 4,
                      margin: '0 0 12px' }}>
-          // SYSTEM CAPABILITIES
+          {t('dash_nge.feat_sys')}
         </p>
         <h2 style={{ fontFamily: "'Orbitron'", fontSize: 36,
                      fontWeight: 900, color: '#FF6600',
                      letterSpacing: 4, margin: 0,
                      textShadow: '0 0 30px #FF660066' }}>
-          FEATURES
+          {t('dash_nge.feat_title')}
         </h2>
       </motion.div>
 
@@ -682,18 +687,19 @@ function FeaturesSection({ navigate }) {
 
 // ── STATS SECTION ────────────────────────────────────────────
 function StatsSection() {
+  const { t } = useTranslation()
   const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
 
   const STATS = [
-    { value: 140,    suffix: 'M+', label: 'Indian Farmers', color: '#FF6600',   desc: 'potential users across India' },
-    { value: 93,     suffix: '%',  label: 'Crop Accuracy',  color: '#00FF41',   desc: 'on test dataset' },
-    { value: 85,     suffix: '%',  label: 'Disease Detect', color: '#FF0033',   desc: 'MobileNetV2 accuracy' },
-    { value: 38,     suffix: '',   label: 'Disease Classes', color: '#00FFFF',  desc: 'plant diseases detected' },
-    { value: 22,     suffix: '',   label: 'Crop Types',     color: '#FFD700',   desc: 'recommendation supported' },
-    { value: 3,      suffix: '',   label: 'Languages',      color: '#8B5CF6',   desc: 'Tamil, Hindi, English' },
-    { value: 500,    suffix: '+',  label: 'Mandi Locations',color: '#FF6600',   desc: 'live price coverage' },
-    { value: 15,     suffix: '+',  label: 'Govt Schemes',   color: '#00FF41',   desc: 'discoverable schemes' },
+    { value: 140,    suffix: 'M+', label: t('dash_nge.stat1_l'), color: '#FF6600',   desc: t('dash_nge.stat1_d') },
+    { value: 93,     suffix: '%',  label: t('dash_nge.stat2_l'), color: '#00FF41',   desc: t('dash_nge.stat2_d') },
+    { value: 85,     suffix: '%',  label: t('dash_nge.stat3_l'), color: '#FF0033',   desc: t('dash_nge.stat3_d') },
+    { value: 38,     suffix: '',   label: t('dash_nge.stat4_l'), color: '#00FFFF',  desc: t('dash_nge.stat4_d') },
+    { value: 22,     suffix: '',   label: t('dash_nge.stat5_l'), color: '#FFD700',   desc: t('dash_nge.stat5_d') },
+    { value: 3,      suffix: '',   label: t('dash_nge.stat6_l'), color: '#8B5CF6',   desc: t('dash_nge.stat6_d') },
+    { value: 500,    suffix: '+',  label: t('dash_nge.stat7_l'), color: '#FF6600',   desc: t('dash_nge.stat7_d') },
+    { value: 15,     suffix: '+',  label: t('dash_nge.stat8_l'), color: '#00FF41',   desc: t('dash_nge.stat8_d') },
   ]
 
   return (
@@ -705,13 +711,13 @@ function StatsSection() {
         <p style={{ fontFamily:"'Courier New'", fontSize: 9,
                      color: '#FF660066', letterSpacing: 4,
                      margin: '0 0 12px' }}>
-          // SYSTEM METRICS
+          {t('dash_nge.stat_sys')}
         </p>
         <h2 style={{ fontFamily:"'Orbitron'", fontSize: 36,
                      fontWeight: 900, color: '#FF6600',
                      letterSpacing: 4, margin: 0,
                      textShadow: '0 0 30px #FF660066' }}>
-          BY THE NUMBERS
+          {t('dash_nge.stat_title')}
         </h2>
       </motion.div>
 
@@ -757,6 +763,7 @@ function StatsSection() {
 
 // ── TECH SECTION ─────────────────────────────────────────────
 function TechSection() {
+  const { t } = useTranslation()
   const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
 
@@ -784,13 +791,13 @@ function TechSection() {
         <p style={{ fontFamily:"'Courier New'", fontSize: 9,
                      color: '#FF660066', letterSpacing: 4,
                      margin: '0 0 12px' }}>
-          // SYSTEM ARCHITECTURE
+          {t('dash_nge.tech_sys')}
         </p>
         <h2 style={{ fontFamily:"'Orbitron'", fontSize: 36,
                      fontWeight: 900, color: '#FF6600',
                      letterSpacing: 4, margin: 0,
                      textShadow: '0 0 30px #FF660066' }}>
-          TECH STACK
+          {t('dash_nge.tech_title')}
         </h2>
       </motion.div>
 
@@ -832,17 +839,18 @@ function TechSection() {
 
 // ── DEMO SECTION ─────────────────────────────────────────────
 function DemoSection() {
+  const { t } = useTranslation()
   const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
   const [step,  setStep]  = useState(0)
 
   const DEMO_STEPS = [
-    { title: 'Select State',    desc: 'Click Tamil Nadu on the interactive India map',               icon: '🗺️', color: '#FF6600' },
-    { title: 'Pick District',   desc: 'Choose Chennai from the district grid',                       icon: '📍', color: '#00FFFF' },
-    { title: 'AI Analyzes',     desc: 'MAGI fetches live weather + soil data and runs ML model',     icon: '🧠', color: '#8B5CF6' },
-    { title: 'Get Result',      desc: 'Rice recommended with 92% confidence + full farming guide',   icon: '🌾', color: '#00FF41' },
-    { title: 'Detect Disease',  desc: 'Upload leaf photo → CNN scans 38 diseases in 2 seconds',     icon: '🔬', color: '#FF0033' },
-    { title: 'Ask AI in Tamil', desc: 'Type question in Tamil → Gemini responds in Tamil instantly', icon: '💬', color: '#FFD700' },
+    { title: t('dash_nge.d1_t'), desc: t('dash_nge.d1_d'), icon: '🗺️', color: '#FF6600' },
+    { title: t('dash_nge.d2_t'), desc: t('dash_nge.d2_d'), icon: '📍', color: '#00FFFF' },
+    { title: t('dash_nge.d3_t'), desc: t('dash_nge.d3_d'), icon: '🧠', color: '#8B5CF6' },
+    { title: t('dash_nge.d4_t'), desc: t('dash_nge.d4_d'), icon: '🌾', color: '#00FF41' },
+    { title: t('dash_nge.d5_t'), desc: t('dash_nge.d5_d'), icon: '🔬', color: '#FF0033' },
+    { title: t('dash_nge.d6_t'), desc: t('dash_nge.d6_d'), icon: '💬', color: '#FFD700' },
   ]
 
   useEffect(() => {
@@ -860,13 +868,13 @@ function DemoSection() {
         <p style={{ fontFamily:"'Courier New'", fontSize: 9,
                      color: '#FF660066', letterSpacing: 4,
                      margin: '0 0 12px' }}>
-          // SYSTEM DEMONSTRATION
+          {t('dash_nge.demo_sys')}
         </p>
         <h2 style={{ fontFamily:"'Orbitron'", fontSize: 36,
                      fontWeight: 900, color: '#FF6600',
                      letterSpacing: 4, margin: 0,
                      textShadow: '0 0 30px #FF660066' }}>
-          HOW IT WORKS
+          {t('dash_nge.demo_title')}
         </h2>
       </motion.div>
 
@@ -968,20 +976,21 @@ function DemoSection() {
 
 // ── ENTER SECTION ────────────────────────────────────────────
 function EnterSection({ navigate }) {
+  const { t } = useTranslation()
   const ref    = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
   const { displayed } = useTyped(
-    '> MAGI SYSTEM FULLY OPERATIONAL\n> ALL MODULES ONLINE\n> AWAITING OPERATOR INPUT...',
+    t('dash_nge.enter_typed'),
     25, inView ? 0 : 99999
   )
 
   const QUICK_LINKS = [
-    { label:'CROP ANALYSIS',     icon:'🌾', path:'/crop',     color:'#FF6600' },
-    { label:'DISEASE SCAN',      icon:'🔬', path:'/disease',  color:'#FF0033' },
-    { label:'WEATHER INTEL',     icon:'🌤️', path:'/weather',  color:'#00FFFF' },
-    { label:'MARKET PRICES',     icon:'📊', path:'/market',   color:'#FFD700' },
-    { label:'MAGI QUERY',        icon:'🤖', path:'/chat',     color:'#8B5CF6' },
-    { label:'FEDERAL DIRECTIVES',icon:'🏛️', path:'/schemes',  color:'#00FF41' },
+    { label: t('dash_nge.ql1'), icon:'🌾', path:'/crop',     color:'#FF6600' },
+    { label: t('dash_nge.ql2'), icon:'🔬', path:'/disease',  color:'#FF0033' },
+    { label: t('dash_nge.ql3'), icon:'🌤️', path:'/weather',  color:'#00FFFF' },
+    { label: t('dash_nge.ql4'), icon:'📊', path:'/market',   color:'#FFD700' },
+    { label: t('dash_nge.ql5'), icon:'🤖', path:'/chat',     color:'#8B5CF6' },
+    { label: t('dash_nge.ql6'), icon:'🏛️', path:'/schemes',  color:'#00FF41' },
   ]
 
   return (
@@ -997,14 +1006,14 @@ function EnterSection({ navigate }) {
         style={{ fontFamily:"'Courier New'", fontSize: 9,
                  color: '#FF660066', letterSpacing: 4,
                  margin: '0 0 20px' }}>
-        // SYSTEM READY
+        {t('dash_nge.enter_sys_rdy')}
       </motion.p>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={inView ? { opacity: 1, scale: 1 } : {}}
         transition={{ delay: 0.2 }}>
-        <GlitchText size={52}>ENTER AMRITKRISHI</GlitchText>
+        <GlitchText size={52}>{t('dash_nge.enter_title')}</GlitchText>
       </motion.div>
 
       {/* Terminal */}
@@ -1046,7 +1055,7 @@ function EnterSection({ navigate }) {
           boxShadow: '0 0 40px #FF660044',
           transition: 'all 0.2s'
         }}>
-        // INITIALIZE SYSTEM ►
+        {t('dash_nge.btn_init')}
       </motion.button>
 
       {/* Quick links grid */}
@@ -1083,7 +1092,7 @@ function EnterSection({ navigate }) {
       <p style={{ fontFamily:"'Courier New'", fontSize: 9,
                    color: '#FF660022', letterSpacing: 3,
                    margin: '48px 0 0' }}>
-        AMRITKRISHI 2.0 // NERV AGRI DIVISION // CLASSIFIED LEVEL 3 // 2026
+        {t('dash_nge.footer')}
       </p>
     </div>
   )

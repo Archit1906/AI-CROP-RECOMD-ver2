@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid,
          Tooltip, ResponsiveContainer, Cell } from 'recharts'
@@ -16,6 +17,7 @@ const TN_CITIES = [
 ]
 
 export default function WeatherPage() {
+  const { t } = useTranslation()
   const [city, setCity] = useState("Chennai")
   const [searchInput, setSearchInput] = useState("Chennai")
   const [data, setData] = useState(null)
@@ -34,7 +36,7 @@ export default function WeatherPage() {
       const res = await api.get(`/api/weather/${cityName}`)
       setData(res.data)
     } catch {
-      setError(`WARNING: THREAT ANALYSIS FOR "${cityName}" FAILED.`)
+      setError(t('wea_nge.sys_fail').replace('FAILED.', `"${cityName}" FAILED.`))
     } finally {
       setLoading(false)
     }
@@ -64,10 +66,10 @@ export default function WeatherPage() {
     if (active && payload?.length) return (
       <div style={{ background: '#0D0D1A', border: '1px solid #FF6600',
                     borderRadius: 2, padding: '10px 14px', fontFamily: "'Share Tech Mono', monospace" }}>
-        <p style={{ color: '#FF660088', fontSize: 9, margin: '0 0 4px', letterSpacing: 2 }}>// DATA POINT</p>
+        <p style={{ color: '#FF660088', fontSize: 9, margin: '0 0 4px', letterSpacing: 2 }}>{t('wea_nge.dp')}</p>
         <p style={{ color: '#FF6600', fontSize: 12, margin: '0 0 4px' }}>{label}</p>
         <p style={{ color: '#00FFFF', fontWeight: 700, margin: 0, fontSize: 13 }}>
-          RAINFALL: {payload[0].value} mm
+          {t('wea_nge.rain_mm')} {payload[0].value} mm
         </p>
       </div>
     )
@@ -77,12 +79,12 @@ export default function WeatherPage() {
   if (loading) return (
     <div className="hex-bg" style={{ padding: 24, background: '#0A0A0F', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <h1 style={{ fontSize: 28, fontWeight: 900, color: '#FF6600', margin: '0 0 8px', fontFamily: "'Orbitron', sans-serif", letterSpacing: 4, textTransform: 'uppercase' }} className="glitch-text">
-        ATMOSPHERIC THREAT ANALYSIS
+        {t('wea_nge.title')}
       </h1>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flex: 1, flexDirection: 'column', gap: 12 }}>
         <div className="flicker" style={{ color: '#FF6600', fontSize: 14, fontFamily: "'Share Tech Mono', monospace", letterSpacing: 3 }}>
-          // SCANNING TARGET REGION: {city.toUpperCase()} ...
+          {t('wea_nge.scan_tgt')} {city.toUpperCase()} ...
         </div>
       </div>
     </div>
@@ -109,20 +111,20 @@ export default function WeatherPage() {
         <div>
           <p style={{ fontFamily:"'Share Tech Mono'", fontSize:10, color:'#FF660088',
                       letterSpacing:3, margin:'0 0 4px' }}>
-            // MAGI ENVIRONMENTAL SENSORS
+            {t('wea_nge.sys_sens')}
           </p>
           <h1 style={{ fontSize:28, fontWeight:900, color:'#FF6600', margin:0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 4, textTransform: 'uppercase', textShadow: '0 0 20px #FF660066' }} className="glitch-text">
-            ATMOSPHERIC THREAT ANALYSIS
+            {t('wea_nge.title')}
           </h1>
           <p style={{ color:'#666680', fontSize:11, margin:'4px 0 0', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>
-            LAST INTEL: {data?.last_updated}
+            {t('wea_nge.last_intel')} {data?.last_updated}
           </p>
         </div>
 
         {/* Search bar */}
         <form onSubmit={handleSearch} style={{ display:'flex', gap:8 }}>
           <input value={searchInput} onChange={e => setSearchInput(e.target.value)}
-            placeholder="SCAN REGION..."
+            placeholder={t("wea_nge.scan_reg")}
             style={{ background:'#0A0A0F', border:'1px solid #FF660066', borderRadius:2,
                      color:'#E8E8E8', padding:'10px 14px', fontSize:14, width:220,
                      outline:'none', fontFamily: "'Share Tech Mono', monospace" }}
@@ -135,7 +137,7 @@ export default function WeatherPage() {
             onMouseEnter={e => { e.target.style.background = '#FF660044'; e.target.style.boxShadow = '0 0 20px #FF660044'; }}
             onMouseLeave={e => { e.target.style.background = '#FF660022'; e.target.style.boxShadow = 'none'; }}
           >
-            TARGET
+            {t('wea_nge.target')}
           </button>
         </form>
       </div>
@@ -159,13 +161,13 @@ export default function WeatherPage() {
       </div>
 
       {/* Current Weather Hero Card */}
-      <div className="nge-card" data-label="// TACTICAL BRIEFING" style={{ padding:28, marginBottom:20 }}>
+      <div className="nge-card" data-label={t("wea_nge.tac_brief")} style={{ padding:28, marginBottom:20 }}>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24 }}>
 
           {/* Left: Main temp */}
           <div>
             <p style={{ color:'#FF6600', fontSize:14, margin:'0 0 4px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 2 }}>
-              LOC: {data?.city.toUpperCase()}
+              {t('wea_nge.loc')} {data?.city.toUpperCase()}
             </p>
             <div style={{ display:'flex', alignItems:'center', gap:16, marginTop: 10 }}>
               <span style={{ fontSize:72, filter: 'sepia(1) hue-rotate(-50deg) saturate(3)' }}>{WEATHER_ICONS[c?.icon] || '🌤️'}</span>
@@ -174,7 +176,7 @@ export default function WeatherPage() {
                   {c?.temp}°
                 </p>
                 <p style={{ color:'#00FFFF', fontSize:13, margin:'6px 0 0', fontFamily: "'Share Tech Mono', monospace", textTransform: 'uppercase', letterSpacing: 1 }}>
-                  {c?.description} // FEELS LIKE {c?.feels_like}°C
+                  {c?.description} {t('wea_nge.feels_like')} {c?.feels_like}°C
                 </p>
               </div>
             </div>
@@ -183,10 +185,10 @@ export default function WeatherPage() {
           {/* Right: Stats grid */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
             {[
-              { icon:'💧', label:'HUMIDITY',    value:`${c?.humidity}%` },
-              { icon:'💨', label:'WIND SPD',    value:`${c?.wind_kmh} KM/H` },
-              { icon:'📊', label:'PRESSURE',    value:`${c?.pressure} HPA` },
-              { icon:'👁️', label:'VISIBILITY',  value:`${c?.visibility} KM` },
+              { icon:'💧', label:t('wea_nge.hum'),    value:`${c?.humidity}%` },
+              { icon:'💨', label:t('wea_nge.wind'),    value:`${c?.wind_kmh} KM/H` },
+              { icon:'📊', label:t('wea_nge.press'),    value:`${c?.pressure} HPA` },
+              { icon:'👁️', label:t('wea_nge.vis'),  value:`${c?.visibility} KM` },
             ].map(stat => (
               <div key={stat.label}
                 style={{ background:'#0A0A0F', borderRadius:2,
@@ -205,8 +207,8 @@ export default function WeatherPage() {
         {/* Humidity + Wind visual gauges */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginTop:24 }}>
           {[
-            { label:'ATMOSPHERIC MOISTURE', value:c?.humidity, max:100, color:'#00FFFF', unit:'%' },
-            { label:'WIND VELOCITY', value:c?.wind_kmh, max:100, color:'#FF6600', unit:' KM/H' },
+            { label:t('wea_nge.atm_mst'), value:c?.humidity, max:100, color:'#00FFFF', unit:'%' },
+            { label:t('wea_nge.wind_vel'), value:c?.wind_kmh, max:100, color:'#FF6600', unit:' KM/H' },
           ].map(gauge => (
             <div key={gauge.label}>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
@@ -226,9 +228,9 @@ export default function WeatherPage() {
       </div>
 
       {/* 7-Day Forecast */}
-      <div className="nge-card" data-label="// 7-DAY PROJECTION" style={{ padding:20, marginBottom:20 }}>
+      <div className="nge-card" data-label={t("wea_nge.long_proj")} style={{ padding:20, marginBottom:20 }}>
         <p style={{ color:'#FF6600', fontWeight:700, fontSize:16, margin:'0 0 16px', fontFamily: "'Orbitron', sans-serif", letterSpacing: 3 }}>
-          LONG-TERM PROJECTION
+          {t('wea_nge.proj_title')}
         </p>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:8 }}>
           {data?.forecast?.map((day, i) => (
@@ -236,7 +238,7 @@ export default function WeatherPage() {
                                    padding:'12px 8px', textAlign:'center',
                                    border:'1px solid #FF660044', transition: 'all 0.2s' }}
                  className="nge-hover">
-              <p style={{ color:'#FF660088', fontSize:11, margin:'0 0 8px', fontFamily: "'Share Tech Mono', monospace" }}>DAY-{i+1}</p>
+              <p style={{ color:'#FF660088', fontSize:11, margin:'0 0 8px', fontFamily: "'Share Tech Mono', monospace" }}>{t('wea_nge.day')}{i+1}</p>
               <p style={{ color:'#00FFFF', fontSize:12, margin:'0 0 8px', fontWeight: 700, fontFamily: "'Rajdhani', sans-serif" }}>{day.day.toUpperCase()}</p>
               <span style={{ fontSize:28, filter: 'sepia(1) hue-rotate(-50deg) saturate(3)' }}>{WEATHER_ICONS[day.icon] || '🌤️'}</span>
               <p style={{ color:'#FF6600', fontWeight:700, fontSize:18, margin:'8px 0 2px', fontFamily: "'Orbitron', sans-serif" }}>
@@ -259,9 +261,9 @@ export default function WeatherPage() {
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
 
         {/* Farming Alerts */}
-        <div className="nge-card" data-label="// NOTIFICATIONS" style={{ padding:20 }}>
+        <div className="nge-card" data-label={t("wea_nge.notif")} style={{ padding:20 }}>
           <p style={{ color:'#FF6600', fontWeight:700, fontSize:16, margin:'0 0 14px', fontFamily: "'Orbitron', sans-serif", letterSpacing: 3 }}>
-            ⚠ SYSTEM ALERTS
+            {t('wea_nge.sys_alerts')}
           </p>
           <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
             {data?.alerts?.map((alert, i) => {
@@ -281,10 +283,10 @@ export default function WeatherPage() {
               <div style={{ background:'#0A1A0A', border:'1px solid #00FF41',
                             borderRadius:2, padding:'12px 14px', borderLeft: '4px solid #00FF41' }}>
                 <p style={{ color:'#00FF41', fontWeight:700, margin:'0 0 3px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>
-                  ✅ ALL CLEAR
+                  {t('wea_nge.all_clear')}
                 </p>
                 <p style={{ color:'#E8E8E8', fontSize:11, margin:0, fontFamily: "'Share Tech Mono', monospace" }}>
-                  NO IMMINENT THREATS DETECTED.
+                  {t('wea_nge.no_threats')}
                 </p>
               </div>
             )}
@@ -295,7 +297,7 @@ export default function WeatherPage() {
                         padding:'14px 16px', border:`1px solid ${sowing?.color==='#22C55E'? '#00FF41' : '#FFD700'}` }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <p style={{ color:'#E8E8E8', fontWeight:700, margin:'0 0 4px', fontFamily: "'Share Tech Mono', monospace", fontSize: 13, letterSpacing: 1 }}>
-                // SOWING CONDITIONS
+                {t('wea_nge.sow_cond')}
               </p>
               <span style={{ background:`${sowing?.color==='#22C55E'? '#00FF41' : '#FFD700'}22`, color:sowing?.color==='#22C55E'? '#00FF41' : '#FFD700',
                              padding:'3px 12px', borderRadius:2, border: `1px solid ${sowing?.color==='#22C55E'? '#00FF41' : '#FFD700'}`,
@@ -321,12 +323,12 @@ export default function WeatherPage() {
         </div>
 
         {/* Monthly Rainfall Chart */}
-        <div className="nge-card" data-label="// CLIMATE HISTORY" style={{ padding:20 }}>
+        <div className="nge-card" data-label={t("wea_nge.clim_hist")} style={{ padding:20 }}>
           <p style={{ color:'#FF6600', fontWeight:700, fontSize:16, margin:'0 0 4px', fontFamily: "'Orbitron', sans-serif", letterSpacing: 3 }}>
-            MONTHLY RAINFALL PATTERN
+            {t('wea_nge.mon_rain')}
           </p>
           <p style={{ color:'#666680', fontSize:11, margin:'0 0 16px', fontFamily: "'Share Tech Mono', monospace" }}>
-            // HISTORICAL AVERAGE FOR {data?.city.toUpperCase()}
+            {t('wea_nge.hist_avg')} {data?.city.toUpperCase()}
           </p>
           <div style={{ height:280 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -347,7 +349,7 @@ export default function WeatherPage() {
             </ResponsiveContainer>
           </div>
           <p style={{ color:'#FF660088', fontSize:10, textAlign:'center', margin:'12px 0 0', fontFamily: "'Share Tech Mono', monospace" }}>
-            // PEAK PRECIPITATION INDICATES MONSOON VECTOR
+            {t('wea_nge.peak_precip')}
           </p>
         </div>
 

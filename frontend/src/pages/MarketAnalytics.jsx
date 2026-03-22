@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -34,6 +35,7 @@ const MONTHLY_COMPARISON = [
 const COLORS = ["#00FF41", "#FFD700", "#FF6600", "#FF0033", "#00FFFF", "#E8E8E8"]
 
 export default function MarketAnalytics() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [selectedCrops, setSelectedCrops] = useState(["rice","tomato"])
 
@@ -69,17 +71,17 @@ export default function MarketAnalytics() {
           style={{ background:'#0A0A0F', border:'1px solid #FF660044',
                    borderRadius:2, color:'#FF6600', padding:'10px 14px',
                    cursor:'pointer', fontSize:12, fontFamily: "'Share Tech Mono', monospace", letterSpacing: 2 }}>
-          [◄] GO BACK
+          {t('mkt_nge.go_back')}
         </button>
         <div>
           <p style={{ fontFamily:"'Share Tech Mono'", fontSize:10, color:'#FF660088', letterSpacing:3, margin:'0 0 4px' }}>
-            // LONG-TERM PROJECTIONS
+            {t('mkt_nge.long_proj')}
           </p>
           <h1 className="glitch-text" style={{ fontSize:28, fontWeight:900, color:'#FF6600', margin:0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 3, textTransform: 'uppercase', textShadow: '0 0 20px #FF660066' }}>
-            ADVANCED ANALYTICS
+            {t('mkt_nge.adv_anal')}
           </h1>
           <p style={{ color:'#666680', fontSize:11, margin:'4px 0 0', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>
-            TAMIL NADU MANDI — HISTORICAL TRENDS AND PREDICTIONS
+            {t('mkt_nge.tn_mandi')}
           </p>
         </div>
       </div>
@@ -118,19 +120,19 @@ export default function MarketAnalytics() {
                                  borderColor: crop.volatility==='High' ? '#FF0033' :
                                         crop.volatility==='Medium' ? '#FFD700' : '#00FF41',
                                  fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1, textTransform: 'uppercase' }}>
-                    {crop.volatility} VOLATILITY
+                    {crop.volatility} {t('mkt_nge.volat')}
                   </span>
                 </div>
               </div>
               <div style={{ marginTop:20, paddingTop: 16, borderTop: '1px solid #FF660033', display:'flex', justifyContent:'space-between' }}>
                 <div>
-                  <p style={{ color:'#666680', fontSize:10, margin:'0 0 4px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>+30D PREDICTION</p>
+                  <p style={{ color:'#666680', fontSize:10, margin:'0 0 4px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>{t('mkt_nge.pred_30d')}</p>
                   <p style={{ color:'#00FFFF', fontWeight:700, fontSize:15, margin:0, fontFamily: "'Share Tech Mono', monospace" }}>
                     ₹{crop.predicted.toLocaleString()}
                   </p>
                 </div>
                 <div style={{ textAlign:'right' }}>
-                  <p style={{ color:'#666680', fontSize:10, margin:'0 0 4px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>OPTIMAL SELL MONTH</p>
+                  <p style={{ color:'#666680', fontSize:10, margin:'0 0 4px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>{t('mkt_nge.opt_month')}</p>
                   <p style={{ color:'#00FF41', fontWeight:700, fontSize:15, margin:0, fontFamily: "'Share Tech Mono', monospace", textTransform: 'uppercase' }}>
                     {crop.bestMonth}
                   </p>
@@ -142,9 +144,9 @@ export default function MarketAnalytics() {
       </div>
 
       {/* Crop Toggle Filter */}
-      <div className="nge-card" data-label="// SELECTOR MATRIX" style={{ padding:'20px 24px', marginBottom:24 }}>
+      <div className="nge-card" data-label={t("mkt_nge.sel_mat")} style={{ padding:'20px 24px', marginBottom:24 }}>
         <p style={{ color:'#FF660088', fontSize:11, margin:'0 0 12px', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>
-          // SELECT COMMODITIES FOR CROSS-ANALYSIS:
+          {t('mkt_nge.sel_cross')}
         </p>
         <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
           {CROP_ANALYTICS.map((crop, i) => {
@@ -166,12 +168,12 @@ export default function MarketAnalytics() {
       </div>
 
       {/* Monthly Comparison Chart */}
-      <div className="nge-card" data-label="// 12-MONTH PRICE COMPARISON" style={{ padding:24, marginBottom:24 }}>
+      <div className="nge-card" data-label={t("mkt_nge.month_comp")} style={{ padding:24, marginBottom:24 }}>
         <p style={{ color:'#FF6600', fontWeight:700, fontSize:16, margin:'0 0 4px', fontFamily: "'Orbitron', sans-serif", letterSpacing: 3 }}>
-          HISTORICAL PRICE OVERLAY
+          {t('mkt_nge.hist_overlay')}
         </p>
         <p style={{ color:'#666680', fontSize:11, margin:'0 0 20px', fontFamily: "'Share Tech Mono', monospace" }}>
-          // TOGGLE METRICS IN SELECTOR MATRIX FOR COMPARISON
+          {t('mkt_nge.tog_met')}
         </p>
         <div style={{ height:320 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -208,15 +210,15 @@ export default function MarketAnalytics() {
       </div>
 
       {/* Best Time to Sell Table */}
-      <div className="nge-card" data-label="// TEMPORAL SELL ANALYSIS" style={{ padding:24 }}>
+      <div className="nge-card" data-label={t("mkt_nge.temp_anal")} style={{ padding:24 }}>
         <p style={{ color:'#FF6600', fontWeight:700, fontSize:16, margin:'0 0 20px', fontFamily: "'Orbitron', sans-serif", letterSpacing: 2 }}>
-          SELL CYCLE PROJECTIONS
+          {t('mkt_nge.sell_cyc')}
         </p>
         <div style={{ overflowX:'auto' }}>
           <table style={{ width:'100%', borderCollapse:'collapse' }}>
             <thead>
               <tr style={{ borderBottom:'1px solid #FF660066', background: '#FF660011' }}>
-                {['COMMODITY','CURRENT VAL','LAST PERIOD','DELTA','OPTIMAL WINDOW','+30D PROJECTION'].map(h => (
+                {[t('mkt_nge.h_com'), t('mkt_nge.h_curr'), t('mkt_nge.h_last'), t('mkt_nge.h_delta'), t('mkt_nge.h_opt'), t('mkt_nge.h_proj')].map(h => (
                   <th key={h} style={{ color:'#FF6600', fontSize:10, fontWeight:700,
                                        textAlign:'left', padding:'12px 14px',
                                        textTransform:'uppercase', letterSpacing:2, fontFamily: "'Share Tech Mono', monospace" }}>

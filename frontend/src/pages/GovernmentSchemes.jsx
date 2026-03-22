@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function GovernmentSchemes() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [schemes,      setSchemes]      = useState([])
   const [loading,      setLoading]      = useState(true)
@@ -49,7 +51,7 @@ export default function GovernmentSchemes() {
       setLastUpdated(data.last_updated)
       setError(null)
     } catch (err) {
-      setError("Could not load schemes. Backend offline.")
+      setError(t('gov_nge.err_load'))
     } finally {
       setLoading(false)
     }
@@ -99,12 +101,12 @@ export default function GovernmentSchemes() {
   }
 
   const FILTERS = [
-    { key: 'all',            label: 'ALL'           },
-    { key: 'insurance',      label: 'INSURANCE'     },
-    { key: 'income_support', label: 'INCOME SUPPORT'},
-    { key: 'drought_relief', label: 'DROUGHT RELIEF'},
-    { key: 'subsidy',        label: 'SUBSIDIES'     },
-    { key: 'loan',           label: 'LOANS'         },
+    { key: 'all',            label: t('gov_nge.f_all')           },
+    { key: 'insurance',      label: t('gov_nge.f_ins')     },
+    { key: 'income_support', label: t('gov_nge.f_inc')},
+    { key: 'drought_relief', label: t('gov_nge.f_drought')},
+    { key: 'subsidy',        label: t('gov_nge.f_sub')     },
+    { key: 'loan',           label: t('gov_nge.f_loan')         },
   ]
 
   // FIX: filtered schemes — search + filter both work
@@ -132,7 +134,7 @@ export default function GovernmentSchemes() {
   const getCountdown = (deadlineStr) => {
     const deadline = new Date(deadlineStr)
     const diff     = deadline - now
-    if (diff <= 0) return { label:'EXPIRED', color:'#FF0033', urgent:true, expired:true }
+    if (diff <= 0) return { label:t('gov_nge.expired'), color:'#FF0033', urgent:true, expired:true }
     const days    = Math.floor(diff / 86400000)
     const hours   = Math.floor((diff % 86400000) / 3600000)
     const minutes = Math.floor((diff % 3600000) / 60000)
@@ -176,22 +178,22 @@ export default function GovernmentSchemes() {
         <div>
           <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                       color:'#FF660066', letterSpacing:4, margin:'0 0 6px' }}>
-            // CLEARANCE REQUIRED
+            {t('gov_nge.clr_req')}
           </p>
           <h1 style={{ fontFamily:"'Orbitron'", fontSize:28, fontWeight:900,
                        color:'#FF6600', margin:'0 0 6px', letterSpacing:4,
                        textShadow:'0 0 20px #FF660066' }}>
-            FEDERAL DIRECTIVES
+            {t('gov_nge.title')}
           </h1>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
             <span style={{ background:'#FF000033', border:'1px solid #FF0033',
                            color:'#FF0033', fontFamily:"'Share Tech Mono'",
                            fontSize:9, padding:'2px 8px', letterSpacing:2 }}>
-              RESTRICTED
+              {t('gov_nge.restricted')}
             </span>
             <span style={{ fontFamily:"'Share Tech Mono'", fontSize:10,
                            color:'#666680', letterSpacing:2 }}>
-              ARCHIVE OF SUBSIDIES AND SHIELD PROGRAMS
+              {t('gov_nge.subtitle')}
             </span>
           </div>
         </div>
@@ -205,7 +207,7 @@ export default function GovernmentSchemes() {
             fontSize: 9, letterSpacing: 2, cursor: 'pointer',
             display: 'flex', alignItems: 'center'
           }}>
-            ↻ REFRESH
+            {t('gov_nge.refresh')}
           </button>
 
           {/* Bookmarks toggle */}
@@ -217,7 +219,7 @@ export default function GovernmentSchemes() {
               fontFamily:"'Orbitron'", fontSize:10, letterSpacing:2,
               cursor:'pointer', borderRadius:2, display:'flex', alignItems:'center', gap:6
             }}>
-            🔖 SAVED ({bookmarks.length})
+            {t('gov_nge.saved')} ({bookmarks.length})
           </button>
 
           {/* Verify Clearance — opens eligibility checker */}
@@ -229,7 +231,7 @@ export default function GovernmentSchemes() {
               cursor:'pointer', borderRadius:2,
               boxShadow:'0 0 15px #00FFFF22'
             }}>
-            ⊙ VERIFY CLEARANCE
+            {t('gov_nge.verify_clr')}
           </button>
         </div>
       </div>
@@ -238,17 +240,17 @@ export default function GovernmentSchemes() {
       {lastUpdated && (
         <p style={{ fontFamily: "'Courier New'", fontSize: 8,
                     color: '#444', letterSpacing: 2, margin: '-16px 0 24px' }}>
-          // LAST SYNC: {new Date(lastUpdated).toLocaleString('en-IN')}
+          {t('gov_nge.last_sync')} {new Date(lastUpdated).toLocaleString('en-IN')}
         </p>
       )}
 
       {/* Stats bar */}
       <div style={{ display:'flex', gap:12, marginBottom:20 }}>
         {[
-          { label:'TOTAL DIRECTIVES', value:stats.total || 0,                               color:'#FF6600' },
-          { label:'ACTIVE SCHEMES',   value:stats.active || 0,                              color:'#00FF41' },
-          { label:'NEW THIS SEASON',  value:stats.isNew || 0,                               color:'#FFD700' },
-          { label:'EXPIRED',          value:stats.expired || 0,                             color:'#FF0033' },
+          { label:t('gov_nge.tot_dir'), value:stats.total || 0,                               color:'#FF6600' },
+          { label:t('gov_nge.act_sch'),   value:stats.active || 0,                              color:'#00FF41' },
+          { label:t('gov_nge.new_seas'),  value:stats.isNew || 0,                               color:'#FFD700' },
+          { label:t('gov_nge.expired'),          value:stats.expired || 0,                             color:'#FF0033' },
         ].map(stat => (
           <div key={stat.label} style={{
             background:'#0D0D1A', border:`1px solid ${stat.color}33`,
@@ -273,7 +275,7 @@ export default function GovernmentSchemes() {
                     padding:'16px', marginBottom:20 }}>
         <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                     color:'#FF660066', letterSpacing:3, margin:'0 0 10px' }}>
-          // INDEX QUERY
+          {t('gov_nge.idx_query')}
         </p>
         <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
           {/* Search input — FIX: onChange wired */}
@@ -283,7 +285,7 @@ export default function GovernmentSchemes() {
                         borderRadius:2, padding:'8px 12px' }}>
             <span style={{ color:'#FF660066' }}>⌕</span>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="SEARCH DIRECTIVES..."
+              placeholder={t("gov_nge.search_pl")}
               style={{ background:'transparent', border:'none', outline:'none',
                        color:'#E8E8E8', fontFamily:"'Share Tech Mono'",
                        fontSize:12, letterSpacing:1, width:'100%' }} />
@@ -314,9 +316,9 @@ export default function GovernmentSchemes() {
         {/* Results count */}
         <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                     color:'#666680', margin:'10px 0 0', letterSpacing:2 }}>
-          // {filtered.length} DIRECTIVES FOUND
-          {showBookmarked && ' — SHOWING BOOKMARKED ONLY'}
-          {search && ` — QUERY: "${search.toUpperCase()}"`}
+          // {filtered.length} {t('gov_nge.dir_found')}
+          {showBookmarked && t('gov_nge.show_bm')}
+          {search && `${t('gov_nge.query')} "${search.toUpperCase()}"`}
         </p>
       </div>
 
@@ -331,7 +333,7 @@ export default function GovernmentSchemes() {
           <span style={{ fontSize: 18 }}>🆕</span>
           <p style={{ fontFamily: "'Orbitron'", fontSize: 12,
                        color: '#00FF41', margin: 0, letterSpacing: 2 }}>
-            {newSchemeIds.size} NEW DIRECTIVE{newSchemeIds.size > 1 ? 'S' : ''} ADDED
+            {newSchemeIds.size} {t('gov_nge.new_dir')}
           </p>
         </div>
       )}
@@ -341,7 +343,7 @@ export default function GovernmentSchemes() {
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontFamily: "'Courier New'", fontSize: 8,
                        color: '#FF000044', letterSpacing: 3, margin: '0 0 8px' }}>
-            // EXPIRED DIRECTIVES — {schemes.filter(s => s.is_expired).length} SCHEMES CLOSED
+            {t('gov_nge.exp_dir')} {schemes.filter(s => s.is_expired).length} {t('gov_nge.sch_closed')}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {schemes.filter(s => s.is_expired).map(s => (
@@ -383,11 +385,11 @@ export default function GovernmentSchemes() {
         <div style={{ textAlign:'center', padding:'60px 20px' }}>
           <p style={{ fontFamily:"'Orbitron'", fontSize:16,
                       color:'#FF660044', letterSpacing:4 }}>
-            // NO DIRECTIVES FOUND
+            {t('gov_nge.no_dir')}
           </p>
           <p style={{ fontFamily:"'Share Tech Mono'", color:'#444',
                       fontSize:12, marginTop:8 }}>
-            ADJUST QUERY PARAMETERS
+            {t('gov_nge.adj_query')}
           </p>
         </div>
       ) : (
@@ -485,7 +487,7 @@ export default function GovernmentSchemes() {
                 <div style={{ borderTop:'1px solid #FF660022', paddingTop:12, marginBottom:12 }}>
                   <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                color:'#666680', margin:'0 0 4px', letterSpacing:2 }}>
-                    GRANT AMOUNT
+                    {t('gov_nge.grant_amt')}
                   </p>
                   <p style={{ fontFamily:"'Orbitron'", fontSize:12, fontWeight:700,
                                color:scheme.color, margin:'0 0 10px',
@@ -499,7 +501,7 @@ export default function GovernmentSchemes() {
                     <div>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                    color:'#666680', margin:'0 0 2px', letterSpacing:2 }}>
-                        DEADLINE
+                        {t('gov_nge.deadline')}
                       </p>
                       <p style={{
                         fontFamily:"'Share Tech Mono'", fontSize:10,
@@ -520,7 +522,7 @@ export default function GovernmentSchemes() {
                         fontFamily:"'Share Tech Mono'", fontSize:10,
                         cursor:'pointer', borderRadius:1, letterSpacing:1
                       }}>
-                      {isExpanded ? '▲ LESS' : '▼ MORE'}
+                      {isExpanded ? t('gov_nge.less') : t('gov_nge.more')}
                     </button>
                   </div>
                 </div>
@@ -534,7 +536,7 @@ export default function GovernmentSchemes() {
                     <div style={{ marginBottom:10 }}>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                    color:'#666680', margin:'0 0 4px', letterSpacing:2 }}>
-                        ELIGIBILITY REQUIREMENTS
+                        {t('gov_nge.reqs')}
                       </p>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:11,
                                    color:'#00FFFF', margin:0 }}>
@@ -544,7 +546,7 @@ export default function GovernmentSchemes() {
                     <div style={{ marginBottom:10 }}>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                    color:'#666680', margin:'0 0 4px', letterSpacing:2 }}>
-                        DOCUMENTS REQUIRED
+                        {t('gov_nge.docs')}
                       </p>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:11,
                                    color:'#9CA3AF', margin:0 }}>
@@ -554,7 +556,7 @@ export default function GovernmentSchemes() {
                     <div>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:8,
                                    color:'#666680', margin:'0 0 4px', letterSpacing:2 }}>
-                        APPLICATION DEADLINE
+                        APPLICATION {t('gov_nge.deadline')}
                       </p>
                       <p style={{ fontFamily:"'Share Tech Mono'", fontSize:11,
                                    color: countdown.color, margin:0 }}>
@@ -581,7 +583,7 @@ export default function GovernmentSchemes() {
                     }}
                     onMouseEnter={e => e.currentTarget.style.background=`${scheme.color}44`}
                     onMouseLeave={e => e.currentTarget.style.background=`${scheme.color}22`}>
-                    REQUEST AUTHORIZATION
+                    {t('gov_nge.req_auth')}
                   </button>
                   <button
                     onClick={() => setEligibilityScheme(scheme)}
@@ -594,7 +596,7 @@ export default function GovernmentSchemes() {
                       cursor:'pointer', borderRadius:1,
                       transition:'all 0.15s'
                     }}
-                    title="Check Eligibility">
+                    title={t("gov_nge.chk_elig")}>
                     ✓
                   </button>
                 </div>
@@ -624,11 +626,11 @@ export default function GovernmentSchemes() {
               <div>
                 <p style={{ fontFamily:"'Share Tech Mono'", fontSize:9,
                              color:'#00FFFF88', letterSpacing:3, margin:'0 0 4px' }}>
-                  // ELIGIBILITY VERIFICATION SYSTEM
+                  {t('gov_nge.evs')}
                 </p>
                 <h2 style={{ fontFamily:"'Orbitron'", fontSize:16, fontWeight:700,
                               color:'#00FFFF', margin:0, letterSpacing:3 }}>
-                  VERIFY CLEARANCE
+                  {t('gov_nge.vc_title')}
                 </h2>
               </div>
               <button onClick={() => { setEligibilityScheme(null); setEligibilityResult(null) }}
@@ -642,10 +644,10 @@ export default function GovernmentSchemes() {
             {!eligibilityResult ? (
               <>
                 {[
-                  { label:'STATE', key:'state', type:'select',
+                  { label:t('gov_nge.lbl_state'), key:'state', type:'select',
                     options:['Tamil Nadu','Maharashtra','Punjab','Karnataka','Andhra Pradesh'] },
-                  { label:'LAND (ACRES)', key:'landAcres', type:'number', placeholder:'E.G. 2.5' },
-                  { label:'FARMER CATEGORY', key:'category', type:'select',
+                  { label:t('gov_nge.lbl_land'), key:'landAcres', type:'number', placeholder:'E.G. 2.5' },
+                  { label:t('gov_nge.lbl_cat'), key:'category', type:'select',
                     options:['small','marginal','large'] },
                 ].map(field => (
                   <div key={field.key} style={{ marginBottom:16 }}>
@@ -681,7 +683,7 @@ export default function GovernmentSchemes() {
                            color:'#00FFFF', fontFamily:"'Orbitron'",
                            fontSize:11, letterSpacing:3, cursor:'pointer',
                            borderRadius:2, boxShadow:'0 0 15px #00FFFF22' }}>
-                  // INITIATE CLEARANCE SCAN ►
+                  {t('gov_nge.init_scan')}
                 </button>
               </>
             ) : (
@@ -690,11 +692,11 @@ export default function GovernmentSchemes() {
                               borderRadius:2, padding:'12px 16px', marginBottom:16 }}>
                   <p style={{ fontFamily:"'Orbitron'", fontSize:13, color:'#00FF41',
                                margin:'0 0 4px', letterSpacing:2 }}>
-                    ✓ CLEARANCE GRANTED
+                    {t('gov_nge.clr_grant')}
                   </p>
                   <p style={{ fontFamily:"'Share Tech Mono'", fontSize:10,
                                color:'#9CA3AF', margin:0 }}>
-                    {eligibilityResult.length} DIRECTIVES AVAILABLE FOR YOUR PROFILE
+                    {eligibilityResult.length} {t('gov_nge.dir_avail')}
                   </p>
                 </div>
 
@@ -721,7 +723,7 @@ export default function GovernmentSchemes() {
                            background:'#FF660022', border:'1px solid #FF6600',
                            color:'#FF6600', fontFamily:"'Orbitron'",
                            fontSize:10, letterSpacing:3, cursor:'pointer', borderRadius:2 }}>
-                  CLOSE TERMINAL
+                  {t('gov_nge.close_term')}
                 </button>
               </>
             )}

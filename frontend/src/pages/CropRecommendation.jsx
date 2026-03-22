@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import IndiaMap from '../components/IndiaMap'
@@ -44,6 +45,7 @@ const LOAD_PHASES = [
 ]
 
 export default function CropRecommendation() {
+  const { t } = useTranslation()
   const [step,          setStep]          = useState('map')
   // 'map' → 'district' → 'loading' → 'result'
   const [selectedState, setSelectedState] = useState(null)
@@ -200,18 +202,18 @@ export default function CropRecommendation() {
         <div>
           <p style={{ fontFamily:"'Courier New'", fontSize:9,
                        color:'#FF660066', letterSpacing:4, margin:'0 0 6px' }}>
-            // MAGI CROP ANALYSIS SYSTEM
+            {t('crop_nge.sys_label')}
           </p>
           <h1 style={{ fontFamily:"'Orbitron'", fontSize:22, fontWeight:900,
                        color:'#FF6600', margin:0, letterSpacing:4,
                        textShadow:'0 0 20px #FF660066' }}>
-            CROP RECOMMENDATION
+            {t('crop_nge.title')}
           </h1>
         </div>
 
         {/* Breadcrumb */}
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          {['STATE','DISTRICT','RESULT'].map((label, i) => {
+          {[t('crop_nge.bc_state'), t('crop_nge.bc_dist'), t('crop_nge.bc_res')].map((label, i) => {
             const stepMap = { 0:'map', 1:'district', 2:'result' }
             const isActive = step === stepMap[i] ||
                              (step === 'loading' && i === 1) ||
@@ -261,7 +263,7 @@ export default function CropRecommendation() {
 
           <p style={{ fontFamily:"'Courier New'", fontSize:9,
                        color:'#FF660066', letterSpacing:3, margin:'0 0 4px' }}>
-            // {step === 'map' ? 'SELECT TARGET STATE' : 'STATE LOCKED'}
+            {step === 'map' ? t('crop_nge.sel_state') : t('crop_nge.locked_state')}
           </p>
           {selectedState && (
             <p style={{ fontFamily:"'Orbitron'", fontSize:11, color:'#FF6600',
@@ -296,7 +298,7 @@ export default function CropRecommendation() {
               color:'#FF660066', fontFamily:"'Courier New'",
               fontSize:9, letterSpacing:2, cursor:'pointer'
             }}>
-              // RESELECT STATE ←
+              {t('crop_nge.reselect')}
             </button>
           )}
 
@@ -305,7 +307,7 @@ export default function CropRecommendation() {
             <div style={{ marginTop:12 }}>
               <p style={{ fontFamily:"'Courier New'", fontSize:8,
                            color:'#FF660033', letterSpacing:3, margin:'0 0 6px' }}>
-                // SCAN HISTORY
+                {t('crop_nge.history')}
               </p>
               {history.map((h, i) => (
                 <div key={i}
@@ -359,7 +361,7 @@ export default function CropRecommendation() {
 
                     <p style={{ fontFamily:"'Courier New'", fontSize:9,
                                  color:'#FF660066', letterSpacing:3, margin:'0 0 4px' }}>
-                      // SELECT DISTRICT / CITY
+                      {t('crop_nge.sel_dist')}
                     </p>
                     <p style={{ fontFamily:"'Orbitron'", fontSize:14,
                                  color:'#FF6600', margin:'0 0 16px',
@@ -388,7 +390,7 @@ export default function CropRecommendation() {
                       <input
                         value={distSearch}
                         onChange={e => setDistSearch(e.target.value)}
-                        placeholder="SEARCH DISTRICT..."
+                        placeholder={t("crop_nge.search_dist")}
                         autoFocus
                         style={{ background:'transparent', border:'none',
                                   outline:'none', color:'#E8E8E8',
@@ -407,7 +409,7 @@ export default function CropRecommendation() {
                     <p style={{ fontFamily:"'Courier New'", fontSize:8,
                                  color:'#666680', letterSpacing:2,
                                  margin:'0 0 10px' }}>
-                      // {districts.length} DISTRICTS AVAILABLE
+                      {t('crop_nge.dist_avail').replace('DISTRICTS AVAILABLE', districts.length + ' DISTRICTS AVAILABLE')}
                     </p>
 
                     {/* District grid */}
@@ -475,7 +477,7 @@ export default function CropRecommendation() {
                                        padding:20 }}>
                           <p style={{ fontFamily:"'Courier New'", fontSize:10,
                                        color:'#444', letterSpacing:2 }}>
-                            // NO MATCH FOUND
+                            {t('crop_nge.no_match')}
                           </p>
                         </div>
                       )}
@@ -503,7 +505,7 @@ export default function CropRecommendation() {
                       ))}
                       <span style={{ fontFamily:"'Courier New'", fontSize:8,
                                       color:'#444', letterSpacing:1 }}>
-                        (dot = soil zone type)
+                        {t('crop_nge.zone_note')}
                       </span>
                     </div>
                   </div>
@@ -523,7 +525,7 @@ export default function CropRecommendation() {
 
                   <p style={{ fontFamily:"'Courier New'", fontSize:9,
                                color:'#FF660066', letterSpacing:3, margin:'0 0 20px' }}>
-                    // MAGI ANALYSIS: {selectedState?.toUpperCase()} → {selectedDist?.toUpperCase()}
+                    {t('crop_nge.anal_text')} {selectedState?.toUpperCase()} → {selectedDist?.toUpperCase()}
                   </p>
 
                   {/* Spinner */}
@@ -540,7 +542,7 @@ export default function CropRecommendation() {
                                color:'#FF6600', letterSpacing:1,
                                margin:'0 0 20px',
                                animation:'flicker 0.4s infinite' }}>
-                    {LOAD_PHASES[loadPhase]}
+                    {t('crop_nge.load' + (loadPhase + 1))}
                   </p>
 
                   {/* Phase bars */}
@@ -567,7 +569,7 @@ export default function CropRecommendation() {
                                         color: i === loadPhase ? '#FF6600' : '#333',
                                         letterSpacing:1, minWidth:180,
                                         textAlign:'left' }}>
-                          {phase.replace('// ','')}
+                          {t('crop_nge.load' + (i + 1))?.replace('// ','')}
                         </span>
                       </div>
                     ))}
@@ -595,12 +597,12 @@ export default function CropRecommendation() {
                       <p style={{ fontFamily:"'Courier New'", fontSize:8,
                                    color:'#00FFFF66', letterSpacing:3,
                                    margin:'0 0 8px' }}>
-                        // WEATHER // {selectedDist?.toUpperCase()}
+                        // {t('crop_nge.weather')} // {selectedDist?.toUpperCase()}
                       </p>
                       {weather && [
-                        { l:'TEMP',     v:`${weather.temperature}°C`, c:'#FF6600' },
-                        { l:'HUMIDITY', v:`${weather.humidity}%`,     c:'#00FFFF' },
-                        { l:'RAINFALL', v:`${weather.rainfall}mm`,    c:'#3B82F6' },
+                        { l:t('crop_nge.temp'),     v:`${weather.temperature}°C`, c:'#FF6600' },
+                        { l:t('crop_nge.hum'), v:`${weather.humidity}%`,     c:'#00FFFF' },
+                        { l:t('crop_nge.rain'), v:`${weather.rainfall}mm`,    c:'#3B82F6' },
                       ].map(item => (
                         <div key={item.l} style={{ marginBottom:6 }}>
                           <p style={{ fontFamily:"'Courier New'", fontSize:7,
@@ -625,7 +627,7 @@ export default function CropRecommendation() {
                       <p style={{ fontFamily:"'Courier New'", fontSize:8,
                                    color:'#FF660066', letterSpacing:3,
                                    margin:'0 0 8px' }}>
-                        // SOIL // {soil?.zone?.toUpperCase()} ZONE
+                        // {t('crop_nge.soil')} // {soil?.zone?.toUpperCase()} {t('crop_nge.zone').toUpperCase()}
                       </p>
                       {soil && [
                         { l:'N', v:`${soil.N}`,  c:'#FF6600' },
@@ -657,7 +659,7 @@ export default function CropRecommendation() {
                       <p style={{ fontFamily:"'Courier New'", fontSize:8,
                                    color:'#8B5CF666', letterSpacing:3,
                                    margin:'0 0 8px' }}>
-                        // LOCATION
+                        // {t('crop_nge.loc')}
                       </p>
                       <p style={{ fontFamily:"'Orbitron'", fontSize:11,
                                    color:'#FF6600', margin:'0 0 2px',
@@ -688,7 +690,7 @@ export default function CropRecommendation() {
                                                arid:'#FFD700',plain:'#00FF41'}[z] || '#FF6600'
                                      })(),
                                      margin:0, letterSpacing:2 }}>
-                          {(soil?.zone || 'CENTRAL').toUpperCase()} ZONE
+                          {(soil?.zone || 'CENTRAL').toUpperCase()} {t('crop_nge.zone').toUpperCase()}
                         </p>
                       </div>
                     </div>
@@ -707,7 +709,7 @@ export default function CropRecommendation() {
                         <p style={{ fontFamily:"'Courier New'", fontSize:9,
                                      color:'#FF660066', letterSpacing:3,
                                      margin:'0 0 8px' }}>
-                          // MAGI RECOMMENDATION FOR {selectedDist?.toUpperCase()}
+                          {t('crop_nge.magi_rec')} {selectedDist?.toUpperCase()}
                         </p>
                         <div style={{ display:'flex', alignItems:'center', gap:14 }}>
                           <span style={{ fontSize:44 }}>{cropInfo.emoji}</span>
@@ -723,7 +725,7 @@ export default function CropRecommendation() {
                         <p style={{ fontFamily:"'Courier New'", fontSize:8,
                                      color:'#666680', letterSpacing:2,
                                      margin:'0 0 4px' }}>
-                          CONFIDENCE
+                          {t('crop_nge.conf')}
                         </p>
                         <p style={{ fontFamily:"'Orbitron'", fontSize:30,
                                      fontWeight:900, color:'#00FF41',
@@ -752,10 +754,10 @@ export default function CropRecommendation() {
                                   gridTemplateColumns:'repeat(4,1fr)',
                                   gap:8 }}>
                       {[
-                        { l:'AVG PROFIT', v:cropInfo.profit,  c:'#FFD700' },
-                        { l:'WATER',      v:cropInfo.water,   c:'#00FFFF' },
-                        { l:'SEASON',     v:cropInfo.season,  c:'#FF6600' },
-                        { l:'DURATION',   v:cropInfo.days,    c:'#8B5CF6' },
+                        { l:t('crop_nge.avg_prof'), v:cropInfo.profit,  c:'#FFD700' },
+                        { l:t('crop_nge.water'),      v:cropInfo.water,   c:'#00FFFF' },
+                        { l:t('crop_nge.season'),     v:cropInfo.season,  c:'#FF6600' },
+                        { l:t('crop_nge.duration'),   v:cropInfo.days,    c:'#8B5CF6' },
                       ].map(item => (
                         <div key={item.l} style={{ background:'#0A0A0F',
                                                     border:`1px solid ${item.c}22`,
@@ -785,7 +787,7 @@ export default function CropRecommendation() {
                       <p style={{ fontFamily:"'Courier New'", fontSize:8,
                                    color:'#FF660044', letterSpacing:3,
                                    margin:'0 0 10px' }}>
-                        // ALTERNATIVE RECOMMENDATIONS
+                        {t('crop_nge.alt_rec')}
                       </p>
                       {result.top3.slice(1).map((alt, i) => {
                         const altKey  = alt.crop?.toLowerCase().replace(/[\s_]/g,'')

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -13,6 +14,7 @@ const DISTRICTS = {
 }
 
 export default function MarketPrices() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [state, setState] = useState("Tamil Nadu")
   const [district, setDistrict] = useState("All Districts")
@@ -38,7 +40,7 @@ export default function MarketPrices() {
         setSelectedCrop(res.data.prices[0])
       }
     } catch (err) {
-      setError("COMMUNICATION ERROR: COULD NOT LOAD MARKET PRICES. VERIFY BACKEND UPLINK.")
+      setError(t('mkt_nge.comm_err'))
     } finally {
       setLoading(false)
     }
@@ -69,7 +71,7 @@ export default function MarketPrices() {
   if (loading) return (
     <div className="hex-bg" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   height: '100vh', background: '#0A0A0F', color: '#FF6600', fontSize: 16, fontFamily: "'Share Tech Mono', monospace" }}>
-      <div className="flicker" style={{ letterSpacing: 3 }}>// CONNECTING TO MAGI MARKET INTEL...</div>
+      <div className="flicker" style={{ letterSpacing: 3 }}>{t('mkt_nge.conn')}</div>
     </div>
   )
 
@@ -89,13 +91,13 @@ export default function MarketPrices() {
                     alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <p style={{ fontFamily:"'Share Tech Mono'", fontSize:10, color:'#FF660088', letterSpacing:3, margin:'0 0 4px' }}>
-            // COMMERCE AND TRADE DATA
+            {t('mkt_nge.data_lbl')}
           </p>
           <h1 className="glitch-text" style={{ fontSize: 28, fontWeight: 900, color: '#FF6600', margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 3, textTransform: 'uppercase', textShadow: '0 0 20px #FF660066' }}>
-            MARKET INTELLIGENCE
+            {t('mkt_nge.title')}
           </h1>
           <p style={{ color: '#666680', fontSize: 11, margin: '4px 0 0', fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>
-            LAST ARCHIVE SYNC: {data?.last_updated}
+            {t('mkt_nge.last_sync')} {data?.last_updated}
           </p>
         </div>
 
@@ -130,7 +132,7 @@ export default function MarketPrices() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 24, filter: 'sepia(1) hue-rotate(-50deg) saturate(3)' }}>⏰</span>
             <div>
-              <p style={{ color: '#FFD700', fontWeight: 700, margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 2 }}>SELL RECOMMENDATION</p>
+              <p style={{ color: '#FFD700', fontWeight: 700, margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 2 }}>{t('mkt_nge.sell_rec')}</p>
               <p style={{ color: '#E8E8E8', fontSize: 12, margin: '4px 0 0', fontFamily: "'Share Tech Mono', monospace" }}>
                 {data.best_sell_msg.toUpperCase()}
               </p>
@@ -141,7 +143,7 @@ export default function MarketPrices() {
             style={{ background: '#FFD70022', border: '1px solid #FFD700',
                    borderRadius: 2, color: '#FFD700', fontWeight: 700,
                    padding: '10px 16px', cursor: 'pointer', fontFamily: "'Orbitron', sans-serif", letterSpacing: 2, fontSize: 11, transition: 'all 0.2s' }}>
-            VIEW ANALYTICS ▻
+            {t('mkt_nge.view_anal')}
           </button>
         </div>
       )}
@@ -150,11 +152,11 @@ export default function MarketPrices() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 20 }}>
 
         {/* Crop List */}
-        <div className="nge-card" data-label="// LOCAL MANDI COMMODITIES" style={{ overflow: 'hidden', padding: 0 }}>
+        <div className="nge-card" data-label={t("mkt_nge.mandi_com")} style={{ overflow: 'hidden', padding: 0 }}>
           <div style={{ padding: '16px', borderBottom: '1px solid #FF660044', background: '#0D0D1A' }}>
-            <p style={{ color: '#FF6600', fontWeight: 700, margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 2 }}>CURRENT MANDI PRICES</p>
+            <p style={{ color: '#FF6600', fontWeight: 700, margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 2 }}>{t('mkt_nge.curr_price')}</p>
             <p style={{ color: '#666680', fontSize: 11, margin: '4px 0 0', fontFamily: "'Share Tech Mono', monospace" }}>
-              // SELECT COMMODITY TO VIEW TACTICAL TRENDS
+              {t('mkt_nge.sel_com')}
             </p>
           </div>
 
@@ -194,7 +196,7 @@ export default function MarketPrices() {
         </div>
 
         {/* Chart Panel */}
-        <div className="nge-card" data-label="// COMMODITY VECTOR ANALYSIS" style={{ padding: 24 }}>
+        <div className="nge-card" data-label={t("mkt_nge.vec_anal")} style={{ padding: 24 }}>
 
           {selectedCrop ? (
             <>
@@ -203,13 +205,13 @@ export default function MarketPrices() {
                             alignItems: 'flex-start', marginBottom: 24, flexDirection: 'column', gap: 16 }}>
                 <div>
                   <p style={{ color: '#FF6600', fontWeight: 700, fontSize: 16, margin: 0, fontFamily: "'Orbitron', sans-serif", letterSpacing: 2, textTransform: 'uppercase' }}>
-                    PRICE VECTOR: {selectedCrop.crop}
+                    {t('mkt_nge.price_vec')} {selectedCrop.crop}
                   </p>
                   <p style={{ color: '#00FFFF', fontSize: 12, margin: '6px 0 0', fontFamily: "'Share Tech Mono', monospace" }}>
                     ₹{selectedCrop.price.toLocaleString()} / {selectedCrop.unit.toUpperCase()} •
                     <span style={{ color: selectedCrop.change > 0 ? '#00FF41' : '#FF0033',
                                    marginLeft: 6 }}>
-                      {selectedCrop.change > 0 ? '▲' : '▼'} {Math.abs(selectedCrop.change)}% 24H DELTA
+                      {selectedCrop.change > 0 ? '▲' : '▼'} {Math.abs(selectedCrop.change)}% {t('mkt_nge.delta')}
                     </span>
                   </p>
                 </div>
@@ -260,7 +262,7 @@ export default function MarketPrices() {
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <p style={{ color: '#00FFFF88', fontSize: 10, margin: 0, fontFamily: "'Share Tech Mono', monospace", letterSpacing: 2 }}>
-                    // MAGI PRICE PROJECTION (+30 DAYS)
+                    {t('mkt_nge.proj_msg')}
                   </p>
                   <p style={{ color: '#00FFFF', fontWeight: 700, fontSize: 20, margin: '6px 0 0', fontFamily: "'Orbitron', sans-serif" }}>
                     ₹{Math.round(selectedCrop.price * 1.05).toLocaleString()}
@@ -269,14 +271,14 @@ export default function MarketPrices() {
                 <span style={{ background: selectedCrop.change > 3 ? '#00FF4122' : '#FFD70022',
                                color: selectedCrop.change > 3 ? '#00FF41' : '#FFD700', border: `1px solid ${selectedCrop.change > 3 ? '#00FF41' : '#FFD700'}`,
                                padding: '6px 14px', borderRadius: 2, fontSize: 10, fontWeight: 700, fontFamily: "'Share Tech Mono', monospace", letterSpacing: 1 }}>
-                  {selectedCrop.change > 3 ? '✓ OPTIMAL SELL WINDOW' : '⚠ HOLD ASSET'}
+                  {selectedCrop.change > 3 ? t('mkt_nge.opt_sell') : t('mkt_nge.hold')}
                 </span>
               </div>
             </>
           ) : (
             <div style={{ height: 300, display: 'flex', alignItems: 'center', textAlign: 'center',
                           justifyContent: 'center', color: '#FF660088', fontFamily: "'Share Tech Mono', monospace", fontSize: 12, letterSpacing: 1 }}>
-              NO COMMODITY SELECTED.<br/>PLEASE SELECT A TARGET FROM THE DIRECTORY.
+              {t('mkt_nge.no_sel').split('\n').map((line, i) => <span key={i}>{line}<br/></span>)}
             </div>
           )}
         </div>
